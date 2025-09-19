@@ -1,2 +1,4 @@
-package com.iflash.engine.order;public class Order {
+package com.iflash.engine.order;
+
+class Order {
 }
