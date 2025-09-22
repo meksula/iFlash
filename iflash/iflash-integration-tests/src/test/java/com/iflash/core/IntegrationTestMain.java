@@ -1,4 +1,4 @@
-package com.iflash.engine;
+package com.iflash.core;
 
 import com.iflash.platform.IflashPlatformApplication;
 import org.slf4j.Logger;

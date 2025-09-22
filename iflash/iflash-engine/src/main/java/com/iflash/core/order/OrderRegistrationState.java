@@ -1,7 +1,8 @@
-package com.iflash.engine.order;
+package com.iflash.core.order;
 
 enum OrderRegistrationState {
     SUCCESS,
     PENDING,
-    FAILURE
+    FAILURE,
+    UNKNOWN
 }

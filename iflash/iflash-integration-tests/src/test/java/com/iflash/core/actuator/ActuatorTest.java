@@ -1,6 +1,6 @@
-package com.iflash.engine.actuator;
+package com.iflash.core.actuator;
 
-import com.iflash.engine.IntegrationTestMain;
+import com.iflash.core.IntegrationTestMain;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 

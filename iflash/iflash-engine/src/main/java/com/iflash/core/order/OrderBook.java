@@ -1,4 +1,4 @@
-package com.iflash.engine.order;
+package com.iflash.core.order;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +8,7 @@ import java.util.Queue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.iflash.engine.order.OrderType.MARKET;
+import static com.iflash.core.order.OrderType.MARKET;
 
 class OrderBook {
 

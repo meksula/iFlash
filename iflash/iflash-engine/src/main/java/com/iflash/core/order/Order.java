@@ -1,42 +1,46 @@
-package com.iflash.engine.order;
+package com.iflash.core.order;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.joda.money.CurrencyUnit;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static com.iflash.engine.configuration.GlobalSettings.GLOBAL_CURRENCY;
+import static com.iflash.core.configuration.GlobalSettings.GLOBAL_CURRENCY;
 
+@Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 class Order implements Comparable<Order> {
     private final UUID orderUuid;
     private final ZonedDateTime orderCreationDate;
     private final String ticker;
     private final BigDecimal price;
     private final CurrencyUnit currency;
+
     private OrderRegistrationState orderRegistrationState;
     private OrderState currentOrderState;
     private List<OrderStateChange> orderStateHistory;
 
-    public Order(UUID orderUuid, ZonedDateTime orderCreationDate,
-                 String ticker, BigDecimal price,
-                 CurrencyUnit currency, OrderRegistrationState orderRegistrationState) {
-        this.orderUuid = orderUuid;
-        this.orderCreationDate = orderCreationDate;
-        this.ticker = ticker;
-        this.price = price;
-        this.currency = currency;
-        this.orderRegistrationState = orderRegistrationState;
-    }
-
     static Order factorize(RegisterOrderCommand registerOrderCommand) {
-        return new Order(UUID.randomUUID(), ZonedDateTime.now(), registerOrderCommand.ticker(), registerOrderCommand.price(),
-                         GLOBAL_CURRENCY, OrderRegistrationState.PENDING);
+        var newOrderRegistrationState = OrderRegistrationState.PENDING;
+        var newCurrentOrderState = OrderState.PENDING;
+        List<OrderStateChange> orderStateChanges = new ArrayList<>(0);
+        Order order = new Order(UUID.randomUUID(), ZonedDateTime.now(), registerOrderCommand.ticker(), registerOrderCommand.price(), GLOBAL_CURRENCY, OrderRegistrationState.PENDING, OrderState.PENDING, orderStateChanges);
+        orderStateChanges.add(new OrderStateChange(ZonedDateTime.now(), OrderRegistrationState.UNKNOWN, newOrderRegistrationState, OrderState.UNKNOWN, newCurrentOrderState));
+        return order;
     }
 
     Order offerRegistrationFailed() {
+        var newOrderRegistrationState = OrderRegistrationState.FAILURE;
+        var newCurrentOrderState = OrderState.CLOSED;
+
+        this.orderStateHistory.add(new OrderStateChange(ZonedDateTime.now(), orderRegistrationState, newOrderRegistrationState, currentOrderState, newCurrentOrderState));
         this.orderRegistrationState = OrderRegistrationState.FAILURE;
         this.currentOrderState = OrderState.CLOSED;
         return this;

@@ -1,4 +1,4 @@
-package com.iflash.engine.configuration;
+package com.iflash.core.configuration;
 
 import org.joda.money.CurrencyUnit;
 
