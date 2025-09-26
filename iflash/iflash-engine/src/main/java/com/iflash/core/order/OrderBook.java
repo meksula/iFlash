@@ -2,6 +2,7 @@ package com.iflash.core.order;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -41,15 +42,17 @@ class OrderBook {
 
     private Order preprocessBuyOrder(RegisterOrderCommand registerOrderCommand) {
         if (MARKET == registerOrderCommand.orderType()) {
-            Queue<Order> orders = sellOrdersByTicker.get(registerOrderCommand.ticker());
-            Order order = orders.poll();
-            if (order != null) {
-                return order.bought();
-            } else {
-                throw new IllegalStateException(String.format("Any Order for ticker: %s not exists", registerOrderCommand.ticker()));
-            }
+            Optional<Queue<Order>> ordersQueue = Optional.ofNullable(sellOrdersByTicker.get(registerOrderCommand.ticker()));
+            return ordersQueue.map(orders -> {
+                Order order = orders.poll();
+                if (order != null) {
+                    return order.bought();
+                } else {
+                    throw OrderBookException.noTicker(registerOrderCommand.ticker());
+                }
+            }).orElseThrow(() -> OrderBookException.noTicker(registerOrderCommand.ticker()));
         }
-        throw new IllegalStateException("Not implemented yet");
+        throw new OrderBookException("Not implemented yet");
     }
 
     private Order preprocessSellOrder(RegisterOrderCommand registerOrderCommand) {
@@ -58,7 +61,6 @@ class OrderBook {
             Queue<Order> orders = sellOrdersByTicker.get(registerOrderCommand.ticker());
 
             Order order = Order.factorize(registerOrderCommand);
-
             boolean offerResult = orders.offer(order);
 
             if (offerResult) {

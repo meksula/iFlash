@@ -5,5 +5,6 @@ import java.math.BigDecimal;
 public record RegisterOrderCommand(OrderDirection orderDirection,
                                    OrderType orderType,
                                    String ticker,
-                                   BigDecimal price) {
+                                   BigDecimal price,
+                                   Long volume) {
 }
