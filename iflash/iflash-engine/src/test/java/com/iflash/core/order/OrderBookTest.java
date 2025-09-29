@@ -6,13 +6,10 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Queue;
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class OrderBookTest {
-
-    private static final Random RANDOM = new Random();
 
     @Test
     @DisplayName("Should correctly add sell Order if ticker is not exists")
@@ -24,10 +21,10 @@ class OrderBookTest {
         OrderBook orderBook = new OrderBook();
         RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        Order order = orderBook.registerOrder(registerOrderCommand);
+        List<Order> orders = orderBook.registerOrder(registerOrderCommand);
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
-        assertAll(() -> assertTrue(orderQueue.contains(order)));
+        assertAll(() -> assertTrue(orderQueue.contains(orders.get(0))));
         OrderUtils.printOrders(orderBook, ticker);
     }
 
@@ -41,16 +38,16 @@ class OrderBookTest {
         OrderBook orderBook = new OrderBook();
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        Order order = orderBook.registerOrder(sellCommand);
+        List<Order> orders = orderBook.registerOrder(sellCommand);
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
-        assertAll(() -> assertTrue(orderQueue.contains(order)));
+        assertAll(() -> assertTrue(orderQueue.contains(orders.get(0))));
         OrderUtils.printOrders(orderBook, ticker);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, price, volume);
-        Order boughtAlreadyOrder = orderBook.registerOrder(buyCommand);
+        List<Order> boughtAlreadyOrders = orderBook.registerOrder(buyCommand);
 
-        assertAll(() -> assertNotNull(boughtAlreadyOrder),
+        assertAll(() -> assertNotNull(boughtAlreadyOrders.get(0)),
                   () -> assertEquals(0, orderBook.getOrderQueue(ticker).size()));
 
         OrderUtils.printOrders(orderBook, ticker);
@@ -59,7 +56,7 @@ class OrderBookTest {
     @Test
     @DisplayName("Should reject sell order with exception if ticker not exists")
     void shouldRejectSellOrderWithExceptionIfTickerNotExists() {
-        var notExistingTicker = "DUPA.US";
+        var notExistingTicker = "NOEX.IS";
         var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
@@ -79,10 +76,10 @@ class OrderBookTest {
         OrderBook orderBook = new OrderBook();
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        Order order = orderBook.registerOrder(sellCommand);
+        List<Order> orders = orderBook.registerOrder(sellCommand);
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
-        assertAll(() -> assertTrue(orderQueue.contains(order)));
+        assertAll(() -> assertTrue(orderQueue.contains(orders.get(0))));
         OrderUtils.printOrders(orderBook, ticker);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, price, volume);
@@ -92,15 +89,20 @@ class OrderBookTest {
     }
 
     @Test
-    @DisplayName("Should ensure orders idempotency - cannot register multiple orders with the same uuid")
-    void shouldEnsureOrdersIdempotencyCannotRegisterMultipleOrdersWithTheSameUuid() {
-        // todo
-    }
-
-    @Test
     @DisplayName("Should correctly buy positions from one sell order that is bigger than buy volume")
     void shouldCorrectlyBuyPositionsFromOneSellOrderThatIsBiggerThanBuyVolume() {
+        var ticker = "NVDA.US";
+        var volume = 100L;
 
+        OrderBook orderBook = new OrderBook();
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), volume));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, volume - 1);
+        orderBook.registerOrder(buyCommand);
+
+        assertAll(() -> assertEquals(1, orderBook.getVolume(ticker)),
+                  () -> assertEquals(1, orderBook.getOrderQueue(ticker).size()));
     }
 
     @Test
@@ -142,11 +144,76 @@ class OrderBookTest {
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
+
+        Long volumeForSell = registerOrderCommands.stream()
+                                           .map(RegisterOrderCommand::volume)
+                                           .reduce(Long::sum)
+                                           .get();
+        Long beforeBuyTransactionVolume = orderBook.getVolume(ticker);
+        assertEquals(volumeForSell, beforeBuyTransactionVolume);
+
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, 6L);
+        orderBook.registerOrder(buyCommand);
+
         OrderUtils.printOrders(orderBook, ticker);
 
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, 50L);
-
+        assertAll(() -> assertEquals(beforeBuyTransactionVolume - buyCommand.volume(), orderBook.getVolume(ticker)),
+                  () -> assertEquals(4, orderBook.getOrderQueue(ticker).size()),
+                  () -> assertEquals(34, orderBook.getOrderQueue(ticker).peek().getVolume()));
     }
 
+    @Test
+    @DisplayName("Should correctly buy all positions")
+    void shouldCorrectlyBuyAllPositions() {
+        var ticker = "NVDA.US";
 
+        OrderBook orderBook = new OrderBook();
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+
+        Long volumeForSell = registerOrderCommands.stream()
+                                                  .map(RegisterOrderCommand::volume)
+                                                  .reduce(Long::sum)
+                                                  .get();
+        Long beforeBuyTransactionVolume = orderBook.getVolume(ticker);
+        assertEquals(volumeForSell, beforeBuyTransactionVolume);
+
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, volumeForSell);
+        orderBook.registerOrder(buyCommand);
+
+        OrderUtils.printOrders(orderBook, ticker);
+
+        assertAll(() -> assertEquals(0, orderBook.getVolume(ticker)),
+                  () -> assertEquals(0, orderBook.getOrderQueue(ticker).size()),
+                  () -> assertNull(orderBook.getOrderQueue(ticker).peek()));
+    }
+
+    @Test
+    @DisplayName("Should not allow to selling if available volume is not enough")
+    void shouldNotAllowToSellingIfAvailableVolumeIsNotEnough() {
+        var ticker = "NVDA.US";
+
+        OrderBook orderBook = new OrderBook();
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+
+        Long volumeForSell = registerOrderCommands.stream()
+                                                  .map(RegisterOrderCommand::volume)
+                                                  .reduce(Long::sum)
+                                                  .get();
+        Long beforeBuyTransactionVolume = orderBook.getVolume(ticker);
+        assertEquals(volumeForSell, beforeBuyTransactionVolume);
+
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, volumeForSell + 1);
+
+        assertThrows(OrderBookException.class, () -> orderBook.registerOrder(buyCommand));
+    }
 }

@@ -1,6 +1,6 @@
 package com.iflash.core.order;
 
-enum OrderType {
+public enum OrderType {
     MARKET,        // market order - executed immediately at the best available price
     LIMIT,         // limit order - executed only at the specified price or better
     STOP,          // stop order - triggered when the stop price is reached

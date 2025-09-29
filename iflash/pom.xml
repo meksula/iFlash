@@ -10,8 +10,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>iflash-platform</module>
         <module>iflash-engine</module>
+        <module>iflash-platform</module>
         <module>iflash-integration-tests</module>
     </modules>
 

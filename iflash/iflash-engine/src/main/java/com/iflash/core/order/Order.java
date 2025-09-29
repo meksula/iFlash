@@ -29,7 +29,7 @@ class Order implements Comparable<Order> {
     private final String ticker;
     private final BigDecimal price;
     private final CurrencyUnit currency;
-    private final Long volume;
+    private Long volume;
 
     private OrderRegistrationState orderRegistrationState;
     private OrderState currentOrderState;
@@ -41,7 +41,7 @@ class Order implements Comparable<Order> {
         List<OrderStateChange> orderStateChanges = new ArrayList<>(0);
         Order order = new Order(UUID.randomUUID(), ZonedDateTime.now(), registerOrderCommand.ticker(), registerOrderCommand.price(), GLOBAL_CURRENCY, registerOrderCommand.volume(),
                                 OrderRegistrationState.PENDING, OrderState.PENDING, orderStateChanges);
-        orderStateChanges.add(new OrderStateChange(ZonedDateTime.now(), OrderRegistrationState.UNKNOWN, newOrderRegistrationState, OrderState.UNKNOWN, newCurrentOrderState));
+        orderStateChanges.add(new OrderStateChange(ZonedDateTime.now(), OrderRegistrationState.UNKNOWN, newOrderRegistrationState, OrderState.UNKNOWN, newCurrentOrderState, registerOrderCommand.volume(), registerOrderCommand.volume()));
         return order;
     }
 
@@ -49,7 +49,7 @@ class Order implements Comparable<Order> {
         var newOrderRegistrationState = OrderRegistrationState.FAILURE;
         var newCurrentOrderState = OrderState.CLOSED;
 
-        this.orderStateHistory.add(new OrderStateChange(ZonedDateTime.now(), orderRegistrationState, newOrderRegistrationState, currentOrderState, newCurrentOrderState));
+        this.orderStateHistory.add(new OrderStateChange(ZonedDateTime.now(), orderRegistrationState, newOrderRegistrationState, currentOrderState, newCurrentOrderState, volume, volume));
         this.orderRegistrationState = newOrderRegistrationState;
         this.currentOrderState = newCurrentOrderState;
         return this;
@@ -59,7 +59,7 @@ class Order implements Comparable<Order> {
         var newOrderRegistrationState = OrderRegistrationState.SUCCESS;
         var newCurrentOrderState = OrderState.OPEN;
 
-        this.orderStateHistory.add(new OrderStateChange(ZonedDateTime.now(), orderRegistrationState, newOrderRegistrationState, currentOrderState, newCurrentOrderState));
+        this.orderStateHistory.add(new OrderStateChange(ZonedDateTime.now(), orderRegistrationState, newOrderRegistrationState, currentOrderState, newCurrentOrderState, volume, volume));
         this.orderRegistrationState = newOrderRegistrationState;
         this.currentOrderState = newCurrentOrderState;
         return this;
@@ -68,8 +68,17 @@ class Order implements Comparable<Order> {
     public Order bought() {
         var newCurrentOrderState = OrderState.CLOSED;
 
+        this.orderStateHistory.add(new OrderStateChange(ZonedDateTime.now(), orderRegistrationState, orderRegistrationState, currentOrderState, newCurrentOrderState, volume, 0L));
         this.currentOrderState = newCurrentOrderState;
-        this.orderStateHistory.add(new OrderStateChange(ZonedDateTime.now(), orderRegistrationState, orderRegistrationState, currentOrderState, newCurrentOrderState));
+        return this;
+    }
+
+    public Order boughtPartially(Long volumePartiallyBought) {
+        var newCurrentOrderState = OrderState.OPEN;
+
+        long volumeLeft = volume - volumePartiallyBought;
+        this.orderStateHistory.add(new OrderStateChange(ZonedDateTime.now(), orderRegistrationState, orderRegistrationState, currentOrderState, newCurrentOrderState, volume, volumeLeft));
+        this.volume = volumeLeft;
         this.currentOrderState = newCurrentOrderState;
         return this;
     }
@@ -90,7 +99,9 @@ class Order implements Comparable<Order> {
                             OrderRegistrationState previousOrderRegistrationState,
                             OrderRegistrationState nextOrderRegistrationState,
                             OrderState previousOrderState,
-                            OrderState nextOrderState) {
+                            OrderState nextOrderState,
+                            Long volume,
+                            Long volumeAfterAction) {
     }
 }
 
