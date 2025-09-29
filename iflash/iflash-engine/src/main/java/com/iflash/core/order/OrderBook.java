@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -58,32 +57,35 @@ class OrderBook {
             if (!isVolumeAvailable(registerOrderCommand.ticker(), registerOrderCommand.volume())) {
                 throw OrderBookException.volumeNotAvailable(registerOrderCommand.volume(), registerOrderCommand.ticker());
             }
-            Optional<Queue<Order>> ordersQueue = Optional.ofNullable(sellOrdersByTicker.get(registerOrderCommand.ticker()));
-            return ordersQueue.map(orders -> {
-                List<Order> ordersSoldOut = new ArrayList<>(0);
-                long volumeRequested = registerOrderCommand.volume();
-                long volumeBoughtInSession = 0L;
+            Queue<Order> ordersQueue = sellOrdersByTicker.get(registerOrderCommand.ticker());
+            if (ordersQueue == null) {
+                throw OrderBookException.noTicker(registerOrderCommand.ticker());
+            }
 
-                while (volumeBoughtInSession < volumeRequested) {
-                    Order order = orders.peek();
-                    if (order != null) {
-                        if (order.getVolume() <= volumeRequested) {
-                            Order orderBought = orders.poll().bought();
-                            this.decreaseVolume(registerOrderCommand.ticker(), order.getVolume());
-                            ordersSoldOut.add(orderBought);
-                            volumeBoughtInSession = volumeBoughtInSession + orderBought.getVolume();
-                        } else {
-                            long howMoreVolumeYet = volumeRequested - volumeBoughtInSession;
-                            order.boughtPartially(howMoreVolumeYet);
-                            volumeBoughtInSession = volumeBoughtInSession + howMoreVolumeYet;
-                            this.decreaseVolume(registerOrderCommand.ticker(), howMoreVolumeYet);
-                        }
+            List<Order> ordersSoldOut = new ArrayList<>(0);
+            long volumeRequested = registerOrderCommand.volume();
+            long volumeBoughtInSession = 0L;
+
+            while (volumeBoughtInSession < volumeRequested) {
+                Order order = ordersQueue.peek();
+                if (order != null) {
+                    if (order.getVolume() <= volumeRequested) {
+                        Order orderBought = ordersQueue.poll()
+                                                       .bought();
+                        this.decreaseVolume(registerOrderCommand.ticker(), order.getVolume());
+                        ordersSoldOut.add(orderBought);
+                        volumeBoughtInSession = volumeBoughtInSession + orderBought.getVolume();
                     } else {
-                        throw OrderBookException.volumeNotAvailable(registerOrderCommand.volume(), registerOrderCommand.ticker());
+                        long howMoreVolumeYet = volumeRequested - volumeBoughtInSession;
+                        order.boughtPartially(howMoreVolumeYet);
+                        volumeBoughtInSession = volumeBoughtInSession + howMoreVolumeYet;
+                        this.decreaseVolume(registerOrderCommand.ticker(), howMoreVolumeYet);
                     }
+                } else {
+                    throw OrderBookException.volumeNotAvailable(registerOrderCommand.volume(), registerOrderCommand.ticker());
                 }
-                return ordersSoldOut;
-            }).orElseThrow(() -> OrderBookException.noTicker(registerOrderCommand.ticker()));
+            }
+            return ordersSoldOut;
         }
         throw OrderBookException.orderTypeNotAvailable(registerOrderCommand.orderType());
     }
@@ -116,18 +118,12 @@ class OrderBook {
         return preprocessSellOrder(registerOrderCommand);
     }
 
-    private Long increaseVolume(String ticker, Long volumeSellAlready) {
-        Long volumeExisting = this.volumeByTicker.get(ticker);
-        Long volumeSummed = volumeExisting + volumeSellAlready;
-        this.volumeByTicker.replace(ticker, volumeSummed);
-        return volumeExisting;
+    private void increaseVolume(String ticker, long volume) {
+        volumeByTicker.merge(ticker, volume, Long::sum);
     }
 
-    private Long decreaseVolume(String ticker, Long volumeBoughtAlready) {
-        Long volumeExisting = this.volumeByTicker.get(ticker);
-        Long volumeSummed = volumeExisting - volumeBoughtAlready;
-        this.volumeByTicker.replace(ticker, volumeSummed);
-        return volumeExisting;
+    private void decreaseVolume(String ticker, long volume) {
+        volumeByTicker.merge(ticker, -volume, Long::sum);
     }
 
 }
