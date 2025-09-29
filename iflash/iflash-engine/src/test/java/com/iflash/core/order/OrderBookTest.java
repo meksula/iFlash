@@ -4,7 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
@@ -105,10 +104,36 @@ class OrderBookTest {
     }
 
     @Test
+    @DisplayName("Should correctly return boolean value if volume is available or not")
+    void shouldCorrectlyReturnBooleanValueIfVolumeIsAvailableOrNot() {
+        var ticker = "NVDA.US";
+        var tickerNotExisting = "NOEX.IS";
+
+        OrderBook orderBook = new OrderBook();
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+
+        Long volume = registerOrderCommands.stream()
+                                      .map(RegisterOrderCommand::volume)
+                                      .reduce(Long::sum)
+                                      .get();
+
+        assertAll(() -> assertTrue(orderBook.isVolumeAvailable(ticker, volume - 1)),
+                  () -> assertTrue(orderBook.isVolumeAvailable(ticker, volume)),
+                  () -> assertFalse(orderBook.isVolumeAvailable(ticker, volume + 1)),
+                  () -> assertThrows(OrderBookException.class, () -> orderBook.isVolumeAvailable(ticker, -1L)),
+                  () -> assertThrows(OrderBookException.class, () -> orderBook.isVolumeAvailable(ticker, 0L)),
+                  () -> assertFalse(orderBook.isVolumeAvailable(tickerNotExisting, 10L)));
+    }
+
+    @Test
     @DisplayName("Should correctly buy positions from many sell orders")
     void shouldCorrectlyBuyPositionsFromManySellOrders() {
         var ticker = "NVDA.US";
-
 
         OrderBook orderBook = new OrderBook();
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
@@ -123,7 +148,5 @@ class OrderBookTest {
 
     }
 
-    private BigDecimal priceWithRandomDecimalPlaces(BigDecimal price) {
-        return price.add(BigDecimal.valueOf(RANDOM.nextDouble(0.9999))).setScale(4, RoundingMode.HALF_UP);
-    }
+
 }
