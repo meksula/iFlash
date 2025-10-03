@@ -9,7 +9,7 @@ import java.util.Queue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class OrderBookTest {
+class SimpleOrderBookTest {
 
     @Test
     @DisplayName("Should correctly add sell Order if ticker is not exists")
@@ -18,10 +18,10 @@ class OrderBookTest {
         var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
-        OrderBook orderBook = new OrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<Order> orders = orderBook.registerOrder(registerOrderCommand);
+        List<Order> orders = orderBook.registerOrder(registerOrderCommand).orders();
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
         assertAll(() -> assertTrue(orderQueue.contains(orders.get(0))));
@@ -35,17 +35,17 @@ class OrderBookTest {
         var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
-        OrderBook orderBook = new OrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<Order> orders = orderBook.registerOrder(sellCommand);
+        List<Order> orders = orderBook.registerOrder(sellCommand).orders();
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
         assertAll(() -> assertTrue(orderQueue.contains(orders.get(0))));
         OrderUtils.printOrders(orderBook, ticker);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, price, volume);
-        List<Order> boughtAlreadyOrders = orderBook.registerOrder(buyCommand);
+        List<Order> boughtAlreadyOrders = orderBook.registerOrder(buyCommand).orders();
 
         assertAll(() -> assertNotNull(boughtAlreadyOrders.get(0)),
                   () -> assertEquals(0, orderBook.getOrderQueue(ticker).size()));
@@ -60,7 +60,7 @@ class OrderBookTest {
         var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
-        OrderBook orderBook = new OrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, notExistingTicker, price, volume);
 
         assertThrows(OrderBookException.class, () -> orderBook.registerOrder(sellCommand));
@@ -73,10 +73,10 @@ class OrderBookTest {
         var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
-        OrderBook orderBook = new OrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<Order> orders = orderBook.registerOrder(sellCommand);
+        List<Order> orders = orderBook.registerOrder(sellCommand).orders();
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
         assertAll(() -> assertTrue(orderQueue.contains(orders.get(0))));
@@ -94,7 +94,7 @@ class OrderBookTest {
         var ticker = "NVDA.US";
         var volume = 100L;
 
-        OrderBook orderBook = new OrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), volume));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
@@ -111,7 +111,7 @@ class OrderBookTest {
         var ticker = "NVDA.US";
         var tickerNotExisting = "NOEX.IS";
 
-        OrderBook orderBook = new OrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
@@ -137,7 +137,7 @@ class OrderBookTest {
     void shouldCorrectlyBuyPositionsFromManySellOrders() {
         var ticker = "NVDA.US";
 
-        OrderBook orderBook = new OrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
@@ -167,7 +167,7 @@ class OrderBookTest {
     void shouldCorrectlyBuyAllPositions() {
         var ticker = "NVDA.US";
 
-        OrderBook orderBook = new OrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
@@ -197,7 +197,7 @@ class OrderBookTest {
     void shouldNotAllowToSellingIfAvailableVolumeIsNotEnough() {
         var ticker = "NVDA.US";
 
-        OrderBook orderBook = new OrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),

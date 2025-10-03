@@ -25,4 +25,8 @@ public class OrderBookException extends IllegalStateException {
     public static OrderBookException volumeNotAvailable(Long volume, String ticker) {
         return new OrderBookException(String.format("Volume: %d for ticker: %s is not available", volume, ticker));
     }
+
+    public static OrderBookException cannotCreate() {
+        return new OrderBookException("Cannot create OrderBook");
+    }
 }
