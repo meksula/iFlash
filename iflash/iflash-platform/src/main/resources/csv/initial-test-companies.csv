@@ -1,0 +1,100 @@
+Lp,ticker,name,price
+1,AAPL,Apple Inc.,245.27
+2,MSFT,Microsoft Corporation,510.96
+3,AMZN,Amazon.com Inc.,216.37
+4,GOOGL,Alphabet Inc.,236.57
+5,TSLA,Tesla Inc.,413.49
+6,META,Meta Platforms Inc.,705.30
+7,NVDA,NVIDIA Corporation,183.16
+8,BRK.B,Berkshire Hathaway Inc.,489.13
+9,V,Visa Inc.,343.65
+10,JNJ,Johnson & Johnson,190.72
+11,WMT,Walmart Inc.,101.84
+12,UNH,UnitedHealth Group Inc.,354.50
+13,HD,Home Depot Inc.,375.75
+14,DIS,Walt Disney Co (The),109.19
+15,PYPL,PayPal Holdings Inc.,69.84
+16,MA,Mastercard Incorporated,557.48
+17,PFE,Pharmaceuticals Inc.,24.78
+18,KO,Coca-Cola Co,67.04
+19,PEP,PepsiCo Inc.,150.08
+20,MRK,Merck & Co Inc,85.99
+21,CSCO,Cisco Systems Inc.,67.94
+22,INTC,Intel Corp.,36.37
+23,T,AT&T Inc.,25.87
+24,VZ,Verizon Communications Inc.,39.85
+25,XOM,Exxon Mobil Corp.,110.73
+26,CVX,Chevron Corp.,148.90
+27,BA,Boeing Co.,210.73
+28,CAT,Caterpillar Inc.,491.30
+29,MMM,3M Co.,148.75
+30,GS,Goldman Sachs Group Inc.,764.36
+31,JPM,JPMorgan Chase & Co.,300.89
+32,MS,Morgan Stanley,151.86
+33,WFC,Wells Fargo & Co.,77.62
+34,C,Citigroup Inc.,93.93
+35,USB,U.S. Bancorp.,45.28
+36,BK,Bank Of New York Mellon Corp,104.54
+37,AXP,American Express Co.,316.26
+38,SPG,Simon Property Group Inc.,175.30
+39,TGT,Target Corp.,85.53
+40,LOW,Lowe's Cos. Inc.,232.22
+41,NKE,Nike Inc.,65.22
+42,MCD,McDonald's Corp,297.01
+43,SBUX,Starbucks Corp.,78.46
+44,DISCA,Discovery Inc.,23.45
+45,DISCK,Discovery Inc.,22.90
+46,CMCSA,Comcast Corp.,29.46
+47,FOXA,Fox Corporation,33.10
+48,FOX,Fox Corporation,32.75
+49,AMT,American Tower Corporation,228.40
+50,CCI,Crown Castle Inc.,118.50
+51,PLD,Prologis Inc.,124.60
+52,EQIX,Equinix Inc.,1,000.00
+53,DLR,Digital Realty Trust Inc.,145.00
+54,PSA,Public Storage,300.00
+55,O,Realty Income Corporation,70.00
+56,AMT,American Tower Corporation,228.40
+57,CCI,Crown Castle Inc.,118.50
+58,PLD,Prologis Inc.,124.60
+59,EQIX,Equinix Inc.,1,000.00
+60,DLR,Digital Realty Trust Inc.,145.00
+61,PSA,Public Storage,300.00
+62,O,Realty Income Corporation,70.00
+63,AAPL,Apple Inc.,245.27
+64,MSFT,Microsoft Corporation,510.96
+65,AMZN,Amazon.com Inc.,216.37
+66,GOOGL,Alphabet Inc.,236.57
+67,TSLA,Tesla Inc.,413.49
+68,META,Meta Platforms Inc.,705.30
+69,NVDA,NVIDIA Corporation,183.16
+70,BRK.B,Berkshire Hathaway Inc.,489.13
+71,V,Visa Inc.,343.65
+72,JNJ,Johnson & Johnson,190.72
+73,WMT,Walmart Inc.,101.84
+74,UNH,UnitedHealth Group Inc.,354.50
+76,DIS,Walt Disney Co (The),109.19
+77,PYPL,PayPal Holdings Inc.,69.84
+78,MA,Mastercard Incorporated,557.48
+79,PFE,Pharmaceuticals Inc.,24.78
+80,KO,Coca-Cola Co,67.04
+81,PEP,PepsiCo Inc.,150.08
+82,MRK,Merck & Co Inc,85.99
+83,CSCO,Cisco Systems Inc.,67.94
+84,INTC,Intel Corp.,36.37
+85,T,AT&T Inc.,25.87
+86,VZ,Verizon Communications Inc.,39.85
+87,XOM,Exxon Mobil Corp.,110.73
+88,CVX,Chevron Corp.,148.90
+89,BA,Boeing Co.,210.73
+90,CAT,Caterpillar Inc.,491.30
+91,MMM,3M Co.,148.75
+92,GS,Goldman Sachs Group Inc.,764.36
+93,JPM,JPMorgan Chase & Co.,300.89
+94,MS,Morgan Stanley,151.86
+95,WFC,Wells Fargo & Co.,77.62
+96,C,Citigroup Inc.,93.93
+97,USB,U.S. Bancorp.,45.28
+98,BK,Bank Of New York Mellon Corp,104.54
+99,AXP,American Express Co.,316.26
+100,SPG,Simon Property Group Inc.,175.30

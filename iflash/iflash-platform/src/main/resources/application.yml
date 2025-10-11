@@ -3,3 +3,4 @@ server:
 
 engine:
   type: 'SINGLE_THREAD_ENGINE'
+  initial-data-path: '/csv/initial-test-companies.csv'

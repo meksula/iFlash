@@ -26,9 +26,9 @@ class TradeController {
 
     @GetMapping("/{ticker}/price")
     ResponseEntity<CurrentQuoteResponse> getCurrentPrice(@PathVariable String ticker) {
-        CurrentQuote currentQuote = quotationProvider.getCurrentQuote(ticker);
+        CurrentQuote currentQuote = quotationProvider.getCurrentQuote(ticker.toUpperCase());
 
-        return ResponseEntity.ok(CurrentQuoteResponse.create(currentQuote, ticker));
+        return ResponseEntity.ok(CurrentQuoteResponse.create(currentQuote, ticker.toUpperCase()));
     }
 
     @PostMapping("/order")
