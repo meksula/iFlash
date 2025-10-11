@@ -1,7 +1,10 @@
 package com.iflash.core.quotation;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 
-public record Quotation(String ticker, ZonedDateTime quotationDate, long volume, BigDecimal quotation) {
+public record Quotation(String ticker, long quotationTimestamp, long volume, BigDecimal quotation) {
+
+    CurrentQuote map() {
+        return new CurrentQuote(quotationTimestamp, quotation);
+    }
 }

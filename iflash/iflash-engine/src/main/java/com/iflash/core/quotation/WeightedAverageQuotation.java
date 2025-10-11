@@ -2,7 +2,6 @@ package com.iflash.core.quotation;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 public class WeightedAverageQuotation implements QuotationCalculable {
@@ -18,6 +17,6 @@ public class WeightedAverageQuotation implements QuotationCalculable {
 
         BigDecimal quotationResult = multipliedValuesSum.divide(BigDecimal.valueOf(weightSum), RoundingMode.HALF_UP);
 
-        return new Quotation(ticker, ZonedDateTime.now(), weightSum, quotationResult);
+        return new Quotation(ticker, System.currentTimeMillis(), weightSum, quotationResult);
     }
 }
