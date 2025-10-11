@@ -1,10 +1,14 @@
 package com.iflash.core.engine;
 
 import com.iflash.core.order.OrderBook;
+import com.iflash.core.order.OrderRegistrationResult;
+import com.iflash.core.order.RegisterOrderCommand;
 import com.iflash.core.quotation.QuotationAggregator;
 import com.iflash.core.quotation.QuotationProvider;
 
-public class SingleThreadMatchingEngine implements MatchingEngine {
+import java.util.concurrent.CompletableFuture;
+
+public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperations {
 
     private final OrderBook orderBook;
     private final QuotationAggregator quotationAggregator;
@@ -29,5 +33,19 @@ public class SingleThreadMatchingEngine implements MatchingEngine {
     @Override
     public QuotationProvider quotationProvider() {
         return quotationProvider;
+    }
+
+    @Override
+    public TradingOperations tradingOperations() {
+        return this;
+    }
+
+    @Override
+    public OrderRegistrationResult registerOrder(RegisterOrderCommand registerOrderCommand) {
+        OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(registerOrderCommand);
+
+        CompletableFuture.runAsync(() -> quotationAggregator.handle(registerOrderCommand.ticker(), orderRegistrationResult.transactionInfoList()));
+
+        return orderRegistrationResult;
     }
 }

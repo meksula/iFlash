@@ -66,7 +66,7 @@ class SimpleOrderBook implements OrderBook {
                 throw OrderBookException.noTicker(registerOrderCommand.ticker());
             }
 
-            List<Order> ordersSoldOut = new ArrayList<>(0);
+            List<TransactionInfo> ordersSoldOut = new ArrayList<>(0);
             long volumeRequested = registerOrderCommand.volume();
             long volumeBoughtInSession = 0L;
 
@@ -74,14 +74,15 @@ class SimpleOrderBook implements OrderBook {
                 Order order = ordersQueue.peek();
                 if (order != null) {
                     if (order.getVolume() <= volumeRequested) {
-                        Order orderBought = ordersQueue.poll()
-                                                       .bought();
+                        TransactionInfo boughtTransactionInfo = ordersQueue.poll()
+                                                                           .bought();
                         this.decreaseVolume(registerOrderCommand.ticker(), order.getVolume());
-                        ordersSoldOut.add(orderBought);
-                        volumeBoughtInSession = volumeBoughtInSession + orderBought.getVolume();
+                        ordersSoldOut.add(boughtTransactionInfo);
+                        volumeBoughtInSession = volumeBoughtInSession + boughtTransactionInfo.volume();
                     } else {
                         long howMoreVolumeYet = volumeRequested - volumeBoughtInSession;
-                        order.boughtPartially(howMoreVolumeYet);
+                        TransactionInfo boughtPartiallyTransactionInfo = order.boughtPartially(howMoreVolumeYet);
+                        ordersSoldOut.add(boughtPartiallyTransactionInfo);
                         volumeBoughtInSession = volumeBoughtInSession + howMoreVolumeYet;
                         this.decreaseVolume(registerOrderCommand.ticker(), howMoreVolumeYet);
                     }
@@ -104,22 +105,20 @@ class SimpleOrderBook implements OrderBook {
 
             if (offerResult) {
                 this.increaseVolume(registerOrderCommand.ticker(), registerOrderCommand.volume());
-                return new OrderRegistrationResult(List.of(order.offerSuccessfullyRegistered()));
-            }
-            else {
-                return new OrderRegistrationResult(List.of(order.offerRegistrationFailed()));
+                return new OrderRegistrationResult(List.of(order.offerSuccessfullyRegistered().toTransactionInfoWithCurrentState()));
+            } else {
+                return new OrderRegistrationResult(List.of(order.offerRegistrationFailed().toTransactionInfoWithCurrentState()));
             }
         }
         else {
-            return registerTicker(registerOrderCommand);
+            throw OrderBookException.noTicker(registerOrderCommand.ticker());
         }
     }
 
-    private OrderRegistrationResult registerTicker(RegisterOrderCommand registerOrderCommand) {
+    public void registerTicker(String ticker) {
         Queue<Order> ordersQueue = new PriorityQueue<>();
-        this.sellOrdersByTicker.putIfAbsent(registerOrderCommand.ticker(), ordersQueue);
-        this.volumeByTicker.putIfAbsent(registerOrderCommand.ticker(), 0L);
-        return preprocessSellOrder(registerOrderCommand);
+        this.sellOrdersByTicker.putIfAbsent(ticker, ordersQueue);
+        this.volumeByTicker.putIfAbsent(ticker, 0L);
     }
 
     private void increaseVolume(String ticker, long volume) {

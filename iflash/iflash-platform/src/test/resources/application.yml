@@ -13,3 +13,5 @@ spring:
   test:
     database:
       replace: none
+engine:
+  type: 'SINGLE_THREAD_ENGINE'

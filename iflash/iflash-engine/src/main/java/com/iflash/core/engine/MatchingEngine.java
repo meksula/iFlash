@@ -7,4 +7,6 @@ public interface MatchingEngine {
     MatchingEngineState initialize();
 
     QuotationProvider quotationProvider();
+
+    TradingOperations tradingOperations();
 }

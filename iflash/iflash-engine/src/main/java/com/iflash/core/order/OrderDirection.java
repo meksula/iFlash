@@ -1,6 +1,6 @@
 package com.iflash.core.order;
 
-enum OrderDirection {
+public enum OrderDirection {
     SELL,
     BUY
 }

@@ -65,28 +65,47 @@ class Order implements Comparable<Order> {
         return this;
     }
 
-    public Order bought() {
+    public TransactionInfo bought() {
         var newCurrentOrderState = OrderState.CLOSED;
 
         this.orderStateHistory.add(new OrderStateChange(ZonedDateTime.now(), orderRegistrationState, orderRegistrationState, currentOrderState, newCurrentOrderState, volume, 0L));
         this.currentOrderState = newCurrentOrderState;
-        return this;
+
+        return new TransactionInfo(orderUuid, ticker, volume, price);
     }
 
-    public Order boughtPartially(Long volumePartiallyBought) {
+    public TransactionInfo boughtPartially(Long volumePartiallyBought) {
         var newCurrentOrderState = OrderState.OPEN;
 
         long volumeLeft = volume - volumePartiallyBought;
         this.orderStateHistory.add(new OrderStateChange(ZonedDateTime.now(), orderRegistrationState, orderRegistrationState, currentOrderState, newCurrentOrderState, volume, volumeLeft));
         this.volume = volumeLeft;
         this.currentOrderState = newCurrentOrderState;
-        return this;
+
+        return new TransactionInfo(orderUuid, ticker, volumePartiallyBought, price);
     }
 
     public void printHistory() {
         log.info("=== ORDER'S {} HISTORY BEGIN ===", orderUuid);
         this.orderStateHistory.forEach(orderStateChange -> log.info(orderStateChange.toString()));
         log.info("=== ORDER'S {} HISTORY ORDERS BEGIN ===", orderUuid);
+    }
+
+    TransactionInfo toTransactionInfoWithCurrentState() {
+        return new TransactionInfo(orderUuid, ticker, volume, price);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Order order = (Order) o;
+        return Objects.equals(orderUuid, order.orderUuid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(orderUuid);
     }
 
     @Override

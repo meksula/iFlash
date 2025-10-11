@@ -1,5 +1,7 @@
 package com.iflash.core.quotation;
 
+import com.iflash.core.order.TransactionInfo;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,12 +18,16 @@ public class QuotationAggregatorDefault implements QuotationAggregator, Quotatio
     }
 
     @Override
-    public void handle(String ticker, List<BoughtTransactionInfo> boughtTransactionInfos) {
-        Quotation quotation = quotationCalculable.calculate(ticker, boughtTransactionInfos);
+    public void handle(String ticker, List<TransactionInfo> transactionInfos) {
+        List<BoughtTransactionInfo> boughtTransactionInfoList = transactionInfos.stream()
+                                                                                .map(transactionInfo -> new BoughtTransactionInfo(transactionInfo.volume(), transactionInfo.price()))
+                                                                                .toList();
+        Quotation quotation = quotationCalculable.calculate(ticker, boughtTransactionInfoList);
         List<Quotation> quotationList = quotations.get(ticker);
         if (quotationList != null) {
             quotationList.add(quotation);
-        } else {
+        }
+        else {
             List<Quotation> quotationsNotPresent = new ArrayList<>();
             quotationsNotPresent.add(quotation);
             quotations.putIfAbsent(ticker, quotationsNotPresent);

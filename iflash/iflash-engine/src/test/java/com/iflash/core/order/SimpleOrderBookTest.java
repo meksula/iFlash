@@ -19,12 +19,13 @@ class SimpleOrderBookTest {
         var volume = 1L;
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        orderBook.registerTicker(ticker);
         RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<Order> orders = orderBook.registerOrder(registerOrderCommand).orders();
+        List<TransactionInfo> registeredTransactions = orderBook.registerOrder(registerOrderCommand).transactionInfoList();
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
-        assertAll(() -> assertTrue(orderQueue.contains(orders.get(0))));
+        assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
         OrderUtils.printOrders(orderBook, ticker);
     }
 
@@ -36,16 +37,17 @@ class SimpleOrderBookTest {
         var volume = 1L;
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        orderBook.registerTicker(ticker);
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<Order> orders = orderBook.registerOrder(sellCommand).orders();
+        List<TransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand).transactionInfoList();
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
-        assertAll(() -> assertTrue(orderQueue.contains(orders.get(0))));
+        assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
         OrderUtils.printOrders(orderBook, ticker);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, price, volume);
-        List<Order> boughtAlreadyOrders = orderBook.registerOrder(buyCommand).orders();
+        List<TransactionInfo> boughtAlreadyOrders = orderBook.registerOrder(buyCommand).transactionInfoList();
 
         assertAll(() -> assertNotNull(boughtAlreadyOrders.get(0)),
                   () -> assertEquals(0, orderBook.getOrderQueue(ticker).size()));
@@ -74,12 +76,13 @@ class SimpleOrderBookTest {
         var volume = 1L;
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        orderBook.registerTicker(ticker);
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<Order> orders = orderBook.registerOrder(sellCommand).orders();
+        List<TransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand).transactionInfoList();
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
-        assertAll(() -> assertTrue(orderQueue.contains(orders.get(0))));
+        assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
         OrderUtils.printOrders(orderBook, ticker);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, price, volume);
@@ -95,6 +98,7 @@ class SimpleOrderBookTest {
         var volume = 100L;
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), volume));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
@@ -112,6 +116,7 @@ class SimpleOrderBookTest {
         var tickerNotExisting = "NOEX.IS";
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
@@ -138,6 +143,7 @@ class SimpleOrderBookTest {
         var ticker = "NVDA.US";
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
@@ -168,6 +174,7 @@ class SimpleOrderBookTest {
         var ticker = "NVDA.US";
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
@@ -198,6 +205,7 @@ class SimpleOrderBookTest {
         var ticker = "NVDA.US";
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
@@ -215,5 +223,11 @@ class SimpleOrderBookTest {
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, volumeForSell + 1);
 
         assertThrows(OrderBookException.class, () -> orderBook.registerOrder(buyCommand));
+    }
+
+    private boolean containsUuid(Queue<Order> orderQueue, List<TransactionInfo> registeredTransactions) {
+        return orderQueue.stream()
+                         .anyMatch(order -> order.getOrderUuid().equals(registeredTransactions.get(0)
+                                                                                              .orderUuid()));
     }
 }
