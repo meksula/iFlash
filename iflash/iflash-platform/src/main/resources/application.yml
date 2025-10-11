@@ -1,2 +1,5 @@
 server:
   port: 10023
+
+engine:
+  type: 'SINGLE_THREAD_ENGINE'
