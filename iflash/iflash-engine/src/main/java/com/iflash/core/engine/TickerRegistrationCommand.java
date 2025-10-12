@@ -1,2 +1,6 @@
-package com.iflash.core.engine;public class TickerRegistrationCommand {
+package com.iflash.core.engine;
+
+import java.math.BigDecimal;
+
+public record TickerRegistrationCommand(String ticker, BigDecimal initialPrice) {
 }

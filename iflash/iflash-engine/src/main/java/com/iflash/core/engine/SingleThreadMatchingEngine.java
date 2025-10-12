@@ -6,6 +6,7 @@ import com.iflash.core.order.RegisterOrderCommand;
 import com.iflash.core.quotation.QuotationAggregator;
 import com.iflash.core.quotation.QuotationProvider;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperations {
@@ -25,9 +26,12 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
     }
 
     @Override
-    public MatchingEngineState initialize() {
-        // todo in near future more advanced initialization will be available
-        return null;
+    public MatchingEngineState initialize(List<TickerRegistrationCommand> tickerRegistrationCommandList) {
+        tickerRegistrationCommandList.forEach(tickerRegistrationCommand -> {
+            orderBook.registerTicker(tickerRegistrationCommand.ticker());
+            quotationAggregator.initTicker(tickerRegistrationCommand.ticker(), tickerRegistrationCommand.initialPrice());
+        });
+        return MatchingEngineState.RUNNING;
     }
 
     @Override
@@ -44,7 +48,7 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
     public OrderRegistrationResult registerOrder(RegisterOrderCommand registerOrderCommand) {
         OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(registerOrderCommand);
 
-        CompletableFuture.runAsync(() -> quotationAggregator.handle(registerOrderCommand.ticker(), orderRegistrationResult.transactionInfoList()));
+        CompletableFuture.runAsync(() -> quotationAggregator.handle(registerOrderCommand, orderRegistrationResult.transactionInfoList()));
 
         return orderRegistrationResult;
     }

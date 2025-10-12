@@ -37,6 +37,14 @@ class SimpleOrderBook implements OrderBook {
         };
     }
 
+    @Override
+    public void registerTicker(String ticker) {
+        Queue<Order> ordersQueue = new PriorityQueue<>();
+        this.sellOrdersByTicker.putIfAbsent(ticker, ordersQueue);
+        this.volumeByTicker.putIfAbsent(ticker, 0L);
+        log.info("Company with ticker: {} registered", ticker);
+    }
+
     public Queue<Order> getOrderQueue(String ticker) {
         return sellOrdersByTicker.get(ticker);
     }
@@ -113,12 +121,6 @@ class SimpleOrderBook implements OrderBook {
         else {
             throw OrderBookException.noTicker(registerOrderCommand.ticker());
         }
-    }
-
-    public void registerTicker(String ticker) {
-        Queue<Order> ordersQueue = new PriorityQueue<>();
-        this.sellOrdersByTicker.putIfAbsent(ticker, ordersQueue);
-        this.volumeByTicker.putIfAbsent(ticker, 0L);
     }
 
     private void increaseVolume(String ticker, long volume) {
