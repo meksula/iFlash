@@ -7,6 +7,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 import com.iflash.commons.ValidateUtils;
+import com.iflash.core.engine.FinancialInstrumentInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,13 @@ class SimpleOrderBook implements OrderBook {
         this.sellOrdersByTicker.putIfAbsent(ticker, ordersQueue);
         this.volumeByTicker.putIfAbsent(ticker, 0L);
         log.info("Company with ticker: {} registered", ticker);
+    }
+
+    public List<String> getAllTickers() {
+        return sellOrdersByTicker.keySet()
+                                 .stream()
+                                 .sorted()
+                                 .toList();
     }
 
     public Queue<Order> getOrderQueue(String ticker) {
@@ -130,5 +138,4 @@ class SimpleOrderBook implements OrderBook {
     private void decreaseVolume(String ticker, long volume) {
         volumeByTicker.merge(ticker, -volume, Long::sum);
     }
-
 }

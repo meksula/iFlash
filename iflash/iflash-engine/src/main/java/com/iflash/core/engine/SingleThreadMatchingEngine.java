@@ -9,7 +9,7 @@ import com.iflash.core.quotation.QuotationProvider;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperations {
+public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperations, OrderBookOperations {
 
     private final OrderBook orderBook;
     private final QuotationAggregator quotationAggregator;
@@ -45,11 +45,21 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
     }
 
     @Override
+    public OrderBookOperations orderBookOperations() {
+        return this;
+    }
+
+    @Override
     public OrderRegistrationResult registerOrder(RegisterOrderCommand registerOrderCommand) {
         OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(registerOrderCommand);
 
         CompletableFuture.runAsync(() -> quotationAggregator.handle(registerOrderCommand, orderRegistrationResult.finishedTransactionInfoList()));
 
         return orderRegistrationResult;
+    }
+
+    @Override
+    public List<FinancialInstrumentInfo> getFinancialInstrumentInfo() {
+        return quotationProvider.getAllTickersWithQuotation();
     }
 }

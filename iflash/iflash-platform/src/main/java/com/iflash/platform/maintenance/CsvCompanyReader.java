@@ -1,5 +1,7 @@
 package com.iflash.platform.maintenance;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -7,9 +9,14 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class CsvCompanyReader {
 
     public List<Company> read(String path) {
+        if (path == null || path.isEmpty()) {
+            log.error("Empty initial ticker list!");
+            return List.of();
+        }
         List<Company> companies = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(path)))) {

@@ -1,4 +1,4 @@
-package com.iflash.platform.trade;
+package com.iflash.platform.quotation;
 
 import com.iflash.core.quotation.CurrentQuote;
 

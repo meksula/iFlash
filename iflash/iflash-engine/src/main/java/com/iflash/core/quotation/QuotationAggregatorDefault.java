@@ -1,5 +1,6 @@
 package com.iflash.core.quotation;
 
+import com.iflash.core.engine.FinancialInstrumentInfo;
 import com.iflash.core.order.OrderBookException;
 import com.iflash.core.order.RegisterOrderCommand;
 import com.iflash.core.order.FinishedTransactionInfo;
@@ -7,6 +8,7 @@ import com.iflash.core.order.FinishedTransactionInfo;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -83,9 +85,9 @@ public class QuotationAggregatorDefault implements QuotationAggregator, Quotatio
             case DESC -> {
                 int fromIndex = quotationList.size() - limit;
                 List<CurrentQuote> currentQuotes = quotationList.subList(Math.max(fromIndex, 0), quotationList.size())
-                                                          .stream()
-                                                          .map(Quotation::map)
-                                                          .collect(Collectors.toList());
+                                                                .stream()
+                                                                .map(Quotation::map)
+                                                                .collect(Collectors.toList());
                 Collections.reverse(currentQuotes);
                 yield currentQuotes;
             }
@@ -98,5 +100,17 @@ public class QuotationAggregatorDefault implements QuotationAggregator, Quotatio
         Quotation quotation = new Quotation(ticker, System.currentTimeMillis(), 0L, initialPrice);
         quotationList.add(quotation);
         quotations.putIfAbsent(ticker, quotationList);
+    }
+
+    @Override
+    public List<FinancialInstrumentInfo> getAllTickersWithQuotation() {
+        return quotations.entrySet()
+                         .stream()
+                         .map(entry -> new FinancialInstrumentInfo(entry.getKey(),
+                                                                   entry.getValue()
+                                                                        .getLast()
+                                                                        .quotation()))
+                         .sorted(Comparator.comparing(FinancialInstrumentInfo::ticker))
+                         .collect(Collectors.toList());
     }
 }

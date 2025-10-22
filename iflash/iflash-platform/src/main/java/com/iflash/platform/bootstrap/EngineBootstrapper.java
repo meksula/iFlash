@@ -3,6 +3,7 @@ package com.iflash.platform.bootstrap;
 import com.iflash.core.engine.MatchingEngine;
 import com.iflash.core.engine.MatchingEngineFactory;
 import com.iflash.core.engine.MatchingEngineType;
+import com.iflash.core.engine.OrderBookOperations;
 import com.iflash.core.engine.TradingOperations;
 import com.iflash.core.quotation.QuotationProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,5 +29,10 @@ public class EngineBootstrapper {
     @Bean(name = "tradingOperations")
     public TradingOperations tradingOperations(MatchingEngine matchingEngine) {
         return matchingEngine.tradingOperations();
+    }
+
+    @Bean(name = "orderBookOperations")
+    public OrderBookOperations orderBookOperations(MatchingEngine matchingEngine) {
+        return matchingEngine.orderBookOperations();
     }
 }

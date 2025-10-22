@@ -11,4 +11,6 @@ public interface MatchingEngine {
     QuotationProvider quotationProvider();
 
     TradingOperations tradingOperations();
+
+    OrderBookOperations orderBookOperations();
 }
