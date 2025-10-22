@@ -1,7 +1,7 @@
 package com.iflash.platform.quotation;
 
+import com.iflash.commons.OrderBy;
 import com.iflash.core.quotation.CurrentQuote;
-import com.iflash.core.quotation.OrderBy;
 import com.iflash.core.quotation.QuotationProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.iflash.core.quotation;
+package com.iflash.commons;
 
 public enum OrderBy {
     DESC,

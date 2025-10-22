@@ -1,6 +1,9 @@
 package com.iflash.core.engine;
 
+import com.iflash.commons.Page;
+import com.iflash.commons.Pagination;
 import com.iflash.core.order.OrderBook;
+import com.iflash.core.order.OrderInformation;
 import com.iflash.core.order.OrderRegistrationResult;
 import com.iflash.core.order.RegisterOrderCommand;
 import com.iflash.core.quotation.QuotationAggregator;
@@ -61,5 +64,10 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
     @Override
     public List<FinancialInstrumentInfo> getFinancialInstrumentInfo() {
         return quotationProvider.getAllTickersWithQuotation();
+    }
+
+    @Override
+    public Page<OrderInformation> getOrderBookSnapshot(String ticker, Pagination pagination) {
+        return orderBook.getOrderBookSnapshot(ticker, pagination);
     }
 }

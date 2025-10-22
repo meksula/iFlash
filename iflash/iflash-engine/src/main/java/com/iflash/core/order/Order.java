@@ -114,6 +114,10 @@ class Order implements Comparable<Order> {
                       .compareTo(Objects.requireNonNull(anotherOrder.price, "Other Order.price is null"));
     }
 
+    public OrderInformation orderInformation() {
+        return new OrderInformation(orderCreationDate, price, volume);
+    }
+
     record OrderStateChange(ZonedDateTime changeDateTime,
                             OrderRegistrationState previousOrderRegistrationState,
                             OrderRegistrationState nextOrderRegistrationState,
