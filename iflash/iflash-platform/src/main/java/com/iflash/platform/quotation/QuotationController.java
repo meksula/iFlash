@@ -28,6 +28,7 @@ class QuotationController {
         return ResponseEntity.ok(CurrentQuoteResponse.create(currentQuote, ticker.toUpperCase()));
     }
 
+    // todo introduce pagination here class Pagination
     @GetMapping("/{ticker}/{limit}/{orderBy}")
     ResponseEntity<CurrentMultiQuoteResponse> getCurrentPrices(@PathVariable String ticker, @PathVariable Integer limit, @PathVariable OrderBy orderBy) {
         List<CurrentQuote> lastQuotes = quotationProvider.getLastQuotes(ticker, limit, orderBy);
