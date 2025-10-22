@@ -6,13 +6,10 @@ iflash is a fast, efficient, real-time response app for stock market simulation.
 
 <h2>iflash API description</h2>
 
-<br>
-<br>
-
 <h5>Get all financial instrument list</h5>
-METHOD: `GET`  
-URI: `/api/v1/instrument`
-> Use this endpoint to retrieve the list of available financial instruments on the iFlash exchange.
+  METHOD: `GET`  
+  URI: `/api/v1/instrument`
+  > Use this endpoint to retrieve the list of available financial instruments on the iFlash exchange.
 
 Example response body:
 ```
