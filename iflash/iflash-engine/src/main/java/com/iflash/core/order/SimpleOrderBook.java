@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.stream.Collectors;
 
 import com.iflash.commons.Page;
@@ -43,7 +43,7 @@ class SimpleOrderBook implements OrderBook {
 
     @Override
     public void registerTicker(String ticker) {
-        Queue<Order> ordersQueue = new PriorityQueue<>();
+        Queue<Order> ordersQueue = new PriorityBlockingQueue<>();
         this.sellOrdersByTicker.putIfAbsent(ticker, ordersQueue);
         this.volumeByTicker.putIfAbsent(ticker, 0L);
         log.info("Company with ticker: {} registered", ticker);
@@ -55,6 +55,9 @@ class SimpleOrderBook implements OrderBook {
         Queue<Order> orders = sellOrdersByTicker.get(ticker);
         if (orders == null) {
             throw OrderBookException.noTicker(ticker);
+        }
+        if (orders.isEmpty()) {
+            return Page.of(List.of(), pagination);
         }
         List<Order> orderList = new ArrayList<>(orders);
 
@@ -157,7 +160,6 @@ class SimpleOrderBook implements OrderBook {
         boolean isTickerExists = sellOrdersByTicker.containsKey(registerOrderCommand.ticker());
         if (isTickerExists) {
             Queue<Order> orders = sellOrdersByTicker.get(registerOrderCommand.ticker());
-
             Order order = Order.factorize(registerOrderCommand);
             boolean offerResult = orders.offer(order);
 

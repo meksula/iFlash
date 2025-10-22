@@ -9,8 +9,12 @@ import com.iflash.core.order.RegisterOrderCommand;
 import com.iflash.core.quotation.QuotationAggregator;
 import com.iflash.core.quotation.QuotationProvider;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
+import static com.iflash.core.order.OrderDirection.SELL;
 
 public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperations, OrderBookOperations {
 
@@ -54,10 +58,15 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
 
     @Override
     public OrderRegistrationResult registerOrder(RegisterOrderCommand registerOrderCommand) {
+        // todo refactor, not good place for that logic, temporary workaround
+        if (SELL == registerOrderCommand.orderDirection() && registerOrderCommand.price() == null) {
+            RegisterOrderCommand registerOrderCommandWithSpread = registerOrderCommand.withMarketPricePlusSpread(quotationProvider().getCurrentQuote(registerOrderCommand.ticker()),
+                                                                                                                 BigDecimal.valueOf(0.0100)
+                                                                                                                           .setScale(4, RoundingMode.HALF_UP));
+            return orderBook.registerOrder(registerOrderCommandWithSpread);
+        }
         OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(registerOrderCommand);
-
         CompletableFuture.runAsync(() -> quotationAggregator.handle(registerOrderCommand, orderRegistrationResult.finishedTransactionInfoList()));
-
         return orderRegistrationResult;
     }
 
