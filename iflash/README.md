@@ -8,6 +8,7 @@ iflash is a fast, efficient, real-time response app for stock market simulation.
 
 <br>
 <br>
+
 <h5>Get all financial instrument list</h5>
 METHOD: `GET`  
 URI: `/api/v1/instrument`
@@ -33,6 +34,7 @@ Example response body:
 
 <br>
 <br>
+
 <h5>Order Book view</h5>
 METHOD: `GET`    
 URI: `/api/v1/orderbook/NVDA?page=0&size=20&orderBy=DESC`
@@ -67,6 +69,7 @@ Example response body:
 
 <br>
 <br>
+
 <h5>Current quotation</h5>
 METHOD: `GET`    
 URI: `/api/v1/quotation/NVDA/price`
@@ -84,6 +87,7 @@ Example response body:
 
 <br>
 <br>
+
 <h5>Quotation history</h5>
 METHOD: `GET`    
 URI: `/api/v1/quotation/NVDA/100/DESC`
@@ -113,6 +117,7 @@ Example response body:
 
 <br>
 <br>
+
 <h5>Make order</h5>
 METHOD: `POST`    
 URI: `/api/v1/trade/order`
