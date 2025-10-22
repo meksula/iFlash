@@ -22,7 +22,7 @@ class SimpleOrderBookTest {
         orderBook.registerTicker(ticker);
         RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<TransactionInfo> registeredTransactions = orderBook.registerOrder(registerOrderCommand).transactionInfoList();
+        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(registerOrderCommand).finishedTransactionInfoList();
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
         assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
@@ -40,14 +40,14 @@ class SimpleOrderBookTest {
         orderBook.registerTicker(ticker);
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<TransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand).transactionInfoList();
+        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand).finishedTransactionInfoList();
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
         assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
         OrderUtils.printOrders(orderBook, ticker);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, price, volume);
-        List<TransactionInfo> boughtAlreadyOrders = orderBook.registerOrder(buyCommand).transactionInfoList();
+        List<FinishedTransactionInfo> boughtAlreadyOrders = orderBook.registerOrder(buyCommand).finishedTransactionInfoList();
 
         assertAll(() -> assertNotNull(boughtAlreadyOrders.get(0)),
                   () -> assertEquals(0, orderBook.getOrderQueue(ticker).size()));
@@ -79,7 +79,7 @@ class SimpleOrderBookTest {
         orderBook.registerTicker(ticker);
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<TransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand).transactionInfoList();
+        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand).finishedTransactionInfoList();
         Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
 
         assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
@@ -225,7 +225,7 @@ class SimpleOrderBookTest {
         assertThrows(OrderBookException.class, () -> orderBook.registerOrder(buyCommand));
     }
 
-    private boolean containsUuid(Queue<Order> orderQueue, List<TransactionInfo> registeredTransactions) {
+    private boolean containsUuid(Queue<Order> orderQueue, List<FinishedTransactionInfo> registeredTransactions) {
         return orderQueue.stream()
                          .anyMatch(order -> order.getOrderUuid().equals(registeredTransactions.get(0)
                                                                                               .orderUuid()));

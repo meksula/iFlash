@@ -74,7 +74,7 @@ class SimpleOrderBook implements OrderBook {
                 throw OrderBookException.noTicker(registerOrderCommand.ticker());
             }
 
-            List<TransactionInfo> ordersSoldOut = new ArrayList<>(0);
+            List<FinishedTransactionInfo> ordersSoldOut = new ArrayList<>(0);
             long volumeRequested = registerOrderCommand.volume();
             long volumeBoughtInSession = 0L;
 
@@ -82,15 +82,15 @@ class SimpleOrderBook implements OrderBook {
                 Order order = ordersQueue.peek();
                 if (order != null) {
                     if (order.getVolume() <= volumeRequested) {
-                        TransactionInfo boughtTransactionInfo = ordersQueue.poll()
-                                                                           .bought();
+                        FinishedTransactionInfo boughtFinishedTransactionInfo = ordersQueue.poll()
+                                                                                           .bought();
                         this.decreaseVolume(registerOrderCommand.ticker(), order.getVolume());
-                        ordersSoldOut.add(boughtTransactionInfo);
-                        volumeBoughtInSession = volumeBoughtInSession + boughtTransactionInfo.volume();
+                        ordersSoldOut.add(boughtFinishedTransactionInfo);
+                        volumeBoughtInSession = volumeBoughtInSession + boughtFinishedTransactionInfo.volume();
                     } else {
                         long howMoreVolumeYet = volumeRequested - volumeBoughtInSession;
-                        TransactionInfo boughtPartiallyTransactionInfo = order.boughtPartially(howMoreVolumeYet);
-                        ordersSoldOut.add(boughtPartiallyTransactionInfo);
+                        FinishedTransactionInfo boughtPartiallyFinishedTransactionInfo = order.boughtPartially(howMoreVolumeYet);
+                        ordersSoldOut.add(boughtPartiallyFinishedTransactionInfo);
                         volumeBoughtInSession = volumeBoughtInSession + howMoreVolumeYet;
                         this.decreaseVolume(registerOrderCommand.ticker(), howMoreVolumeYet);
                     }

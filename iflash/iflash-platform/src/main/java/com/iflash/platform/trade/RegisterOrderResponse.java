@@ -28,7 +28,7 @@ class RegisterOrderResponse {
     public static RegisterOrderResponse response(OrderRegistrationResult orderRegistrationResult, RegisterOrderRequest registerOrderRequest) {
         return new RegisterOrderResponse(registerOrderRequest.getOrderDirection(), registerOrderRequest.getOrderType(), registerOrderRequest.getTicker(),
                                          registerOrderRequest.getPrice(), registerOrderRequest.getVolume(),
-                                         orderRegistrationResult.transactionInfoList()
+                                         orderRegistrationResult.finishedTransactionInfoList()
                                                                 .stream()
                                                                 .map(transactionInfo -> new TransactionInfoResponse(transactionInfo.volume(), transactionInfo.price()))
                                                                 .collect(Collectors.toList()));

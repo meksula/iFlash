@@ -48,7 +48,7 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
     public OrderRegistrationResult registerOrder(RegisterOrderCommand registerOrderCommand) {
         OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(registerOrderCommand);
 
-        CompletableFuture.runAsync(() -> quotationAggregator.handle(registerOrderCommand, orderRegistrationResult.transactionInfoList()));
+        CompletableFuture.runAsync(() -> quotationAggregator.handle(registerOrderCommand, orderRegistrationResult.finishedTransactionInfoList()));
 
         return orderRegistrationResult;
     }

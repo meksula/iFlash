@@ -1,5 +1,7 @@
 package com.iflash.core.quotation;
 
+import java.util.HashMap;
+
 public class QuotationAggregatorFactory {
 
     public static QuotationAggregator factorizeQuotationAggregator(QuotationCalculationType quotationCalculationType) {
@@ -7,6 +9,6 @@ public class QuotationAggregatorFactory {
             case WEIGHTED_AVERAGE ->  new WeightedAverageQuotation();
         };
 
-        return new QuotationAggregatorDefault(quotationCalculable);
+        return new QuotationAggregatorDefault(quotationCalculable, new HashMap<>());
     }
 }

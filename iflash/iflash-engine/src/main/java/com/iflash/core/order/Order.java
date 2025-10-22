@@ -65,16 +65,16 @@ class Order implements Comparable<Order> {
         return this;
     }
 
-    public TransactionInfo bought() {
+    public FinishedTransactionInfo bought() {
         var newCurrentOrderState = OrderState.CLOSED;
 
         this.orderStateHistory.add(new OrderStateChange(ZonedDateTime.now(), orderRegistrationState, orderRegistrationState, currentOrderState, newCurrentOrderState, volume, 0L));
         this.currentOrderState = newCurrentOrderState;
 
-        return new TransactionInfo(orderUuid, ticker, volume, price);
+        return new FinishedTransactionInfo(orderUuid, ticker, volume, price);
     }
 
-    public TransactionInfo boughtPartially(Long volumePartiallyBought) {
+    public FinishedTransactionInfo boughtPartially(Long volumePartiallyBought) {
         var newCurrentOrderState = OrderState.OPEN;
 
         long volumeLeft = volume - volumePartiallyBought;
@@ -82,7 +82,7 @@ class Order implements Comparable<Order> {
         this.volume = volumeLeft;
         this.currentOrderState = newCurrentOrderState;
 
-        return new TransactionInfo(orderUuid, ticker, volumePartiallyBought, price);
+        return new FinishedTransactionInfo(orderUuid, ticker, volumePartiallyBought, price);
     }
 
     public void printHistory() {
@@ -91,8 +91,8 @@ class Order implements Comparable<Order> {
         log.info("=== ORDER'S {} HISTORY ORDERS BEGIN ===", orderUuid);
     }
 
-    TransactionInfo toTransactionInfoWithCurrentState() {
-        return new TransactionInfo(orderUuid, ticker, volume, price);
+    FinishedTransactionInfo toTransactionInfoWithCurrentState() {
+        return new FinishedTransactionInfo(orderUuid, ticker, volume, price);
     }
 
     @Override

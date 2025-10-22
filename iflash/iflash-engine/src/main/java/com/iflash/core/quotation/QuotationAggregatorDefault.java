@@ -2,42 +2,44 @@ package com.iflash.core.quotation;
 
 import com.iflash.core.order.OrderBookException;
 import com.iflash.core.order.RegisterOrderCommand;
-import com.iflash.core.order.TransactionInfo;
+import com.iflash.core.order.FinishedTransactionInfo;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.iflash.core.order.OrderDirection.BUY;
-import static com.iflash.core.order.OrderDirection.SELL;
 
 public class QuotationAggregatorDefault implements QuotationAggregator, QuotationProvider {
 
     private final QuotationCalculable quotationCalculable;
     private final Map<String, List<Quotation>> quotations;
 
-    public QuotationAggregatorDefault(QuotationCalculable quotationCalculable) {
+    public QuotationAggregatorDefault(QuotationCalculable quotationCalculable, Map<String, List<Quotation>> quotations) {
         this.quotationCalculable = quotationCalculable;
-        this.quotations = new HashMap<>();
+        this.quotations = quotations;
     }
 
     @Override
-    public void handle(RegisterOrderCommand registerOrderCommand, List<TransactionInfo> transactionInfos) {
-        if (SELL == registerOrderCommand.orderDirection()) {
-            // todo
-        }
+    public void handle(RegisterOrderCommand registerOrderCommand, List<FinishedTransactionInfo> finishedTransactionInfos) {
         if (BUY == registerOrderCommand.orderDirection()) {
+            if (finishedTransactionInfos.isEmpty()) {
+                return;
+            }
             String ticker = registerOrderCommand.ticker();
-            List<BoughtTransactionInfo> boughtTransactionInfoList = transactionInfos.stream()
-                                                                                    .map(transactionInfo -> new BoughtTransactionInfo(transactionInfo.volume(), transactionInfo.price()))
-                                                                                    .toList();
+            List<BoughtTransactionInfo> boughtTransactionInfoList = finishedTransactionInfos.stream()
+                                                                                            .map(transactionInfo -> new BoughtTransactionInfo(transactionInfo.volume(),
+                                                                                                                                              transactionInfo.price()))
+                                                                                            .toList();
             Quotation quotation = quotationCalculable.calculate(ticker, boughtTransactionInfoList);
             List<Quotation> quotationList = quotations.get(ticker);
             if (quotationList != null) {
                 quotationList.add(quotation);
-            } else {
+            }
+            else {
                 List<Quotation> quotationsNotPresent = new ArrayList<>();
                 quotationsNotPresent.add(quotation);
                 quotations.putIfAbsent(ticker, quotationsNotPresent);
@@ -50,11 +52,44 @@ public class QuotationAggregatorDefault implements QuotationAggregator, Quotatio
         List<Quotation> quotationList = quotations.get(ticker);
         if (quotationList == null) {
             throw OrderBookException.noTicker(ticker);
-        } else {
+        }
+        else {
             return quotations.get(ticker)
                              .getLast()
                              .map();
         }
+    }
+
+    @Override
+    public List<CurrentQuote> getLastQuotes(String ticker, int limit, OrderBy orderBy) {
+        List<Quotation> quotationList = quotations.get(ticker);
+        if (quotationList == null || quotationList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        int size = quotationList.size();
+        return switch (orderBy) {
+            case ASC -> {
+                if (limit <= 0) {
+                    throw new IllegalStateException("Cannot find Quotations for limit value less or equal to 0");
+                }
+                if (limit > size) {
+                    limit = size;
+                }
+                yield quotationList.subList(0, limit)
+                                   .stream()
+                                   .map(Quotation::map)
+                                   .collect(Collectors.toList());
+            }
+            case DESC -> {
+                int fromIndex = quotationList.size() - limit;
+                List<CurrentQuote> currentQuotes = quotationList.subList(Math.max(fromIndex, 0), quotationList.size())
+                                                          .stream()
+                                                          .map(Quotation::map)
+                                                          .collect(Collectors.toList());
+                Collections.reverse(currentQuotes);
+                yield currentQuotes;
+            }
+        };
     }
 
     @Override
