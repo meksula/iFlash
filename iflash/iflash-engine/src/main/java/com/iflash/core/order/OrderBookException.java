@@ -1,6 +1,10 @@
 package com.iflash.core.order;
 
-public class OrderBookException extends IllegalStateException {
+import com.iflash.core.configuration.MatchingEngineException;
+
+import java.math.BigDecimal;
+
+public class OrderBookException extends MatchingEngineException {
 
     private OrderBookException(String message) {
         super(message);
@@ -28,5 +32,9 @@ public class OrderBookException extends IllegalStateException {
 
     public static OrderBookException cannotCreate() {
         return new OrderBookException("Cannot create OrderBook");
+    }
+
+    public static OrderBookException cannotCreateOrder(BigDecimal proposedPrice) {
+        return new OrderBookException(String.format("Cannot create order because price %f is not valid", proposedPrice.doubleValue()));
     }
 }

@@ -3,8 +3,10 @@ package com.iflash.core.engine;
 import com.iflash.commons.Page;
 import com.iflash.commons.Pagination;
 import com.iflash.core.order.OrderBook;
+import com.iflash.core.order.OrderBookException;
 import com.iflash.core.order.OrderInformation;
 import com.iflash.core.order.OrderRegistrationResult;
+import com.iflash.core.order.OrderRegistrationValidator;
 import com.iflash.core.order.RegisterOrderCommand;
 import com.iflash.core.quotation.QuotationAggregator;
 import com.iflash.core.quotation.QuotationProvider;
@@ -21,11 +23,13 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
     private final OrderBook orderBook;
     private final QuotationAggregator quotationAggregator;
     private final QuotationProvider quotationProvider;
+    private final OrderRegistrationValidator orderRegistrationValidator;
 
     private SingleThreadMatchingEngine(OrderBook orderBook, QuotationAggregator quotationAggregator) {
         this.orderBook = orderBook;
         this.quotationAggregator = quotationAggregator;
         this.quotationProvider = (QuotationProvider) quotationAggregator;
+        this.orderRegistrationValidator = new OrderRegistrationValidator(quotationProvider);
     }
 
     public static SingleThreadMatchingEngine create(OrderBook orderBook, QuotationAggregator quotationAggregator) {
@@ -65,9 +69,14 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
                                                                                                                            .setScale(4, RoundingMode.HALF_UP));
             return orderBook.registerOrder(registerOrderCommandWithSpread);
         }
-        OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(registerOrderCommand);
-        CompletableFuture.runAsync(() -> quotationAggregator.handle(registerOrderCommand, orderRegistrationResult.finishedTransactionInfoList()));
-        return orderRegistrationResult;
+        boolean orderRegistrationPriceValid = orderRegistrationValidator.isOrderRegistrationPriceValid(registerOrderCommand.ticker(), registerOrderCommand.price());
+        if (orderRegistrationPriceValid) {
+            OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(registerOrderCommand);
+            CompletableFuture.runAsync(() -> quotationAggregator.handle(registerOrderCommand, orderRegistrationResult.finishedTransactionInfoList()));
+            return orderRegistrationResult;
+        } else {
+            throw OrderBookException.cannotCreateOrder(registerOrderCommand.price());
+        }
     }
 
     @Override

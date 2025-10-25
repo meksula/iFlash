@@ -225,6 +225,21 @@ class SimpleOrderBookTest {
         assertThrows(OrderBookException.class, () -> orderBook.registerOrder(buyCommand));
     }
 
+    @Test
+    @DisplayName("Should correctly process Partial fill order type")
+    void shouldCorrectlyProcessPartialFillOrderType() {
+        var ticker = "NVDA.US";
+
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        orderBook.registerTicker(ticker);
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+    }
+
     private boolean containsUuid(Queue<Order> orderQueue, List<FinishedTransactionInfo> registeredTransactions) {
         return orderQueue.stream()
                          .anyMatch(order -> order.getOrderUuid().equals(registeredTransactions.get(0)

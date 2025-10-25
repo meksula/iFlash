@@ -130,11 +130,10 @@ class SimpleOrderBook implements OrderBook {
             long volumeBoughtInSession = 0L;
 
             while (volumeBoughtInSession < volumeRequested) {
-                Order order = ordersQueue.peek();
+                Order order = ordersQueue.poll();
                 if (order != null) {
                     if (order.getVolume() <= volumeRequested) {
-                        FinishedTransactionInfo boughtFinishedTransactionInfo = ordersQueue.poll()
-                                                                                           .bought();
+                        FinishedTransactionInfo boughtFinishedTransactionInfo = order.bought();
                         this.decreaseVolume(registerOrderCommand.ticker(), order.getVolume());
                         ordersSoldOut.add(boughtFinishedTransactionInfo);
                         volumeBoughtInSession = volumeBoughtInSession + boughtFinishedTransactionInfo.volume();
@@ -145,13 +144,19 @@ class SimpleOrderBook implements OrderBook {
                         ordersSoldOut.add(boughtPartiallyFinishedTransactionInfo);
                         volumeBoughtInSession = volumeBoughtInSession + howMoreVolumeYet;
                         this.decreaseVolume(registerOrderCommand.ticker(), howMoreVolumeYet);
+                        ordersQueue.offer(order);
                     }
                 }
                 else {
-                    throw OrderBookException.volumeNotAvailable(registerOrderCommand.volume(), registerOrderCommand.ticker());
+                    if (volumeBoughtInSession == 0) {
+                        throw OrderBookException.volumeNotAvailable(registerOrderCommand.volume(), registerOrderCommand.ticker());
+                    } else {
+                        log.info("Partially Fill occured, requested volume: {}, filled volume: {}", volumeRequested, volumeBoughtInSession);
+                        return OrderRegistrationResult.partiallySuccess(ordersSoldOut, registerOrderCommand);
+                    }
                 }
             }
-            return new OrderRegistrationResult(ordersSoldOut);
+            return OrderRegistrationResult.success(ordersSoldOut);
         }
         throw OrderBookException.orderTypeNotAvailable(registerOrderCommand.orderType());
     }
@@ -165,12 +170,12 @@ class SimpleOrderBook implements OrderBook {
 
             if (offerResult) {
                 this.increaseVolume(registerOrderCommand.ticker(), registerOrderCommand.volume());
-                return new OrderRegistrationResult(List.of(order.offerSuccessfullyRegistered()
-                                                                .toTransactionInfoWithCurrentState()));
+                return OrderRegistrationResult.success(List.of(order.offerSuccessfullyRegistered()
+                                                                    .toTransactionInfoWithCurrentState()));
             }
             else {
-                return new OrderRegistrationResult(List.of(order.offerRegistrationFailed()
-                                                                .toTransactionInfoWithCurrentState()));
+                return OrderRegistrationResult.failure(List.of(order.offerRegistrationFailed()
+                                                                    .toTransactionInfoWithCurrentState()), "Could not register your sell order");
             }
         }
         else {
