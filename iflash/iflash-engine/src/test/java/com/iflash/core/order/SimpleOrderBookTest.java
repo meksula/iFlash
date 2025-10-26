@@ -22,8 +22,9 @@ class SimpleOrderBookTest {
         orderBook.registerTicker(ticker);
         RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(registerOrderCommand).finishedTransactionInfoList();
-        Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
+        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(registerOrderCommand)
+                                                                        .finishedTransactionInfoList();
+        Queue<Order> orderQueue = orderBook.getAsksOrderQueue(ticker);
 
         assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
         OrderUtils.printOrders(orderBook, ticker);
@@ -40,17 +41,21 @@ class SimpleOrderBookTest {
         orderBook.registerTicker(ticker);
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand).finishedTransactionInfoList();
-        Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
+        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand)
+                                                                        .finishedTransactionInfoList();
+        Queue<Order> orderQueue = orderBook.getAsksOrderQueue(ticker);
 
         assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
         OrderUtils.printOrders(orderBook, ticker);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, price, volume);
-        List<FinishedTransactionInfo> boughtAlreadyOrders = orderBook.registerOrder(buyCommand).finishedTransactionInfoList();
+        List<FinishedTransactionInfo> boughtAlreadyOrders = orderBook.registerOrder(buyCommand)
+                                                                     .finishedTransactionInfoList();
 
         assertAll(() -> assertNotNull(boughtAlreadyOrders.get(0)),
-                  () -> assertEquals(0, orderBook.getOrderQueue(ticker).size()));
+                  () -> assertEquals(0,
+                                     orderBook.getAsksOrderQueue(ticker)
+                                              .size()));
 
         OrderUtils.printOrders(orderBook, ticker);
     }
@@ -79,8 +84,9 @@ class SimpleOrderBookTest {
         orderBook.registerTicker(ticker);
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
 
-        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand).finishedTransactionInfoList();
-        Queue<Order> orderQueue = orderBook.getOrderQueue(ticker);
+        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand)
+                                                                        .finishedTransactionInfoList();
+        Queue<Order> orderQueue = orderBook.getAsksOrderQueue(ticker);
 
         assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
         OrderUtils.printOrders(orderBook, ticker);
@@ -105,8 +111,10 @@ class SimpleOrderBookTest {
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, volume - 1);
         orderBook.registerOrder(buyCommand);
 
-        assertAll(() -> assertEquals(1, orderBook.getVolume(ticker)),
-                  () -> assertEquals(1, orderBook.getOrderQueue(ticker).size()));
+        assertAll(() -> assertEquals(1, orderBook.getAsksVolume(ticker)),
+                  () -> assertEquals(1,
+                                     orderBook.getAsksOrderQueue(ticker)
+                                              .size()));
     }
 
     @Test
@@ -125,16 +133,16 @@ class SimpleOrderBookTest {
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Long volume = registerOrderCommands.stream()
-                                      .map(RegisterOrderCommand::volume)
-                                      .reduce(Long::sum)
-                                      .get();
+                                           .map(RegisterOrderCommand::volume)
+                                           .reduce(Long::sum)
+                                           .get();
 
-        assertAll(() -> assertTrue(orderBook.isVolumeAvailable(ticker, volume - 1)),
-                  () -> assertTrue(orderBook.isVolumeAvailable(ticker, volume)),
-                  () -> assertFalse(orderBook.isVolumeAvailable(ticker, volume + 1)),
-                  () -> assertThrows(OrderBookException.class, () -> orderBook.isVolumeAvailable(ticker, -1L)),
-                  () -> assertThrows(OrderBookException.class, () -> orderBook.isVolumeAvailable(ticker, 0L)),
-                  () -> assertFalse(orderBook.isVolumeAvailable(tickerNotExisting, 10L)));
+        assertAll(() -> assertTrue(orderBook.isAsksVolumeAvailable(ticker, volume - 1)),
+                  () -> assertTrue(orderBook.isAsksVolumeAvailable(ticker, volume)),
+                  () -> assertFalse(orderBook.isAsksVolumeAvailable(ticker, volume + 1)),
+                  () -> assertThrows(OrderBookException.class, () -> orderBook.isAsksVolumeAvailable(ticker, -1L)),
+                  () -> assertThrows(OrderBookException.class, () -> orderBook.isAsksVolumeAvailable(ticker, 0L)),
+                  () -> assertFalse(orderBook.isAsksVolumeAvailable(tickerNotExisting, 10L)));
     }
 
     @Test
@@ -152,10 +160,10 @@ class SimpleOrderBookTest {
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Long volumeForSell = registerOrderCommands.stream()
-                                           .map(RegisterOrderCommand::volume)
-                                           .reduce(Long::sum)
-                                           .get();
-        Long beforeBuyTransactionVolume = orderBook.getVolume(ticker);
+                                                  .map(RegisterOrderCommand::volume)
+                                                  .reduce(Long::sum)
+                                                  .get();
+        Long beforeBuyTransactionVolume = orderBook.getAsksVolume(ticker);
         assertEquals(volumeForSell, beforeBuyTransactionVolume);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, 6L);
@@ -163,9 +171,14 @@ class SimpleOrderBookTest {
 
         OrderUtils.printOrders(orderBook, ticker);
 
-        assertAll(() -> assertEquals(beforeBuyTransactionVolume - buyCommand.volume(), orderBook.getVolume(ticker)),
-                  () -> assertEquals(4, orderBook.getOrderQueue(ticker).size()),
-                  () -> assertEquals(34, orderBook.getOrderQueue(ticker).peek().getVolume()));
+        assertAll(() -> assertEquals(beforeBuyTransactionVolume - buyCommand.volume(), orderBook.getAsksVolume(ticker)),
+                  () -> assertEquals(4,
+                                     orderBook.getAsksOrderQueue(ticker)
+                                              .size()),
+                  () -> assertEquals(34,
+                                     orderBook.getAsksOrderQueue(ticker)
+                                              .peek()
+                                              .getVolume()));
     }
 
     @Test
@@ -186,7 +199,7 @@ class SimpleOrderBookTest {
                                                   .map(RegisterOrderCommand::volume)
                                                   .reduce(Long::sum)
                                                   .get();
-        Long beforeBuyTransactionVolume = orderBook.getVolume(ticker);
+        Long beforeBuyTransactionVolume = orderBook.getAsksVolume(ticker);
         assertEquals(volumeForSell, beforeBuyTransactionVolume);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, volumeForSell);
@@ -194,9 +207,12 @@ class SimpleOrderBookTest {
 
         OrderUtils.printOrders(orderBook, ticker);
 
-        assertAll(() -> assertEquals(0, orderBook.getVolume(ticker)),
-                  () -> assertEquals(0, orderBook.getOrderQueue(ticker).size()),
-                  () -> assertNull(orderBook.getOrderQueue(ticker).peek()));
+        assertAll(() -> assertEquals(0, orderBook.getAsksVolume(ticker)),
+                  () -> assertEquals(0,
+                                     orderBook.getAsksOrderQueue(ticker)
+                                              .size()),
+                  () -> assertNull(orderBook.getAsksOrderQueue(ticker)
+                                            .peek()));
     }
 
     @Test
@@ -217,7 +233,7 @@ class SimpleOrderBookTest {
                                                   .map(RegisterOrderCommand::volume)
                                                   .reduce(Long::sum)
                                                   .get();
-        Long beforeBuyTransactionVolume = orderBook.getVolume(ticker);
+        Long beforeBuyTransactionVolume = orderBook.getAsksVolume(ticker);
         assertEquals(volumeForSell, beforeBuyTransactionVolume);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, volumeForSell + 1);
@@ -230,6 +246,7 @@ class SimpleOrderBookTest {
     void shouldCorrectlyProcessPartialFillOrderType() {
         var ticker = "NVDA.US";
 
+        Long missingLimitOrders = 10L;
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
@@ -238,11 +255,33 @@ class SimpleOrderBookTest {
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
                                                                    new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
+
+        Long totalAvailableVolume = registerOrderCommands.stream()
+                                                         .map(RegisterOrderCommand::volume)
+                                                         .reduce(Long::sum)
+                                                         .get();
+        Long requestedVolumeHigherThanAvailable = totalAvailableVolume + missingLimitOrders;
+
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, requestedVolumeHigherThanAvailable);
+
+        OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(buyCommand);
+
+        assertAll(() -> assertEquals(0, orderBook.getAsksVolume(ticker)),
+                  () -> assertEquals(requestedVolumeHigherThanAvailable, orderRegistrationResult.partialFillDetails().volumeRequested()),
+                  () -> assertEquals(totalAvailableVolume, orderRegistrationResult.partialFillDetails().volumeFilled()),
+                  () -> assertEquals(missingLimitOrders, orderRegistrationResult.partialFillDetails().volumePending()));
+    }
+
+    @Test
+    @DisplayName("Should correctly process Partial fill order type and rest of order's volume should be put in bids queue")
+    void shouldCorrectlyProcessPartialFillOrderTypeAndRestOfOrdersVolumeShouldBePutInBidsQueue() {
+
     }
 
     private boolean containsUuid(Queue<Order> orderQueue, List<FinishedTransactionInfo> registeredTransactions) {
         return orderQueue.stream()
-                         .anyMatch(order -> order.getOrderUuid().equals(registeredTransactions.get(0)
-                                                                                              .orderUuid()));
+                         .anyMatch(order -> order.getOrderUuid()
+                                                 .equals(registeredTransactions.get(0)
+                                                                               .orderUuid()));
     }
 }

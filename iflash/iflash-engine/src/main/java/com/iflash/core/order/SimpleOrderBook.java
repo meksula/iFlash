@@ -21,16 +21,16 @@ class SimpleOrderBook implements OrderBook {
 
     private static final Logger log = LoggerFactory.getLogger(SimpleOrderBook.class);
 
-    private final Map<String, Queue<Order>> sellOrdersByTicker;
-    private final Map<String, Long> volumeByTicker;
+    private final Map<String, Queue<Order>> asksOrdersByTicker;
+    private final Map<String, Long> asksVolumeByTicker;
 
     private SimpleOrderBook() {
         throw OrderBookException.cannotCreate();
     }
 
-    SimpleOrderBook(Map<String, Queue<Order>> sellOrdersByTicker, Map<String, Long> volumeByTicker) {
-        this.sellOrdersByTicker = sellOrdersByTicker;
-        this.volumeByTicker = volumeByTicker;
+    SimpleOrderBook(Map<String, Queue<Order>> asksOrdersByTicker, Map<String, Long> asksVolumeByTicker) {
+        this.asksOrdersByTicker = asksOrdersByTicker;
+        this.asksVolumeByTicker = asksVolumeByTicker;
     }
 
     @Override
@@ -44,15 +44,15 @@ class SimpleOrderBook implements OrderBook {
     @Override
     public void registerTicker(String ticker) {
         Queue<Order> ordersQueue = new PriorityBlockingQueue<>();
-        this.sellOrdersByTicker.putIfAbsent(ticker, ordersQueue);
-        this.volumeByTicker.putIfAbsent(ticker, 0L);
+        this.asksOrdersByTicker.putIfAbsent(ticker, ordersQueue);
+        this.asksVolumeByTicker.putIfAbsent(ticker, 0L);
         log.info("Company with ticker: {} registered", ticker);
     }
 
     // todo pagination not supported
     @Override
     public Page<OrderInformation> getOrderBookSnapshot(String ticker, Pagination pagination) {
-        Queue<Order> orders = sellOrdersByTicker.get(ticker);
+        Queue<Order> orders = asksOrdersByTicker.get(ticker);
         if (orders == null) {
             throw OrderBookException.noTicker(ticker);
         }
@@ -90,37 +90,34 @@ class SimpleOrderBook implements OrderBook {
     }
 
     public List<String> getAllTickers() {
-        return sellOrdersByTicker.keySet()
+        return asksOrdersByTicker.keySet()
                                  .stream()
                                  .sorted()
                                  .toList();
     }
 
-    public Queue<Order> getOrderQueue(String ticker) {
-        return sellOrdersByTicker.get(ticker);
+    public Queue<Order> getAsksOrderQueue(String ticker) {
+        return asksOrdersByTicker.get(ticker);
     }
 
-    public boolean isVolumeAvailable(String ticker, Long volumeRequested) {
+    public boolean isAsksVolumeAvailable(String ticker, Long volumeRequested) {
         ValidateUtils.requireNonNullOrThrow(ticker, OrderBookException.tickerNull());
         ValidateUtils.mustBePositive(volumeRequested, OrderBookException.negativeNumber(volumeRequested));
 
-        Long volumeAvailable = this.volumeByTicker.get(ticker);
+        Long volumeAvailable = this.asksVolumeByTicker.get(ticker);
         if (isNull(volumeAvailable)) {
             return false;
         }
         return volumeAvailable >= volumeRequested;
     }
 
-    public Long getVolume(String ticker) {
-        return this.volumeByTicker.getOrDefault(ticker, 0L);
+    public Long getAsksVolume(String ticker) {
+        return this.asksVolumeByTicker.getOrDefault(ticker, 0L);
     }
 
     private OrderRegistrationResult preprocessBuyOrder(RegisterOrderCommand registerOrderCommand) {
         if (MARKET == registerOrderCommand.orderType()) {
-            if (!isVolumeAvailable(registerOrderCommand.ticker(), registerOrderCommand.volume())) {
-                throw OrderBookException.volumeNotAvailable(registerOrderCommand.volume(), registerOrderCommand.ticker());
-            }
-            Queue<Order> ordersQueue = sellOrdersByTicker.get(registerOrderCommand.ticker());
+            Queue<Order> ordersQueue = asksOrdersByTicker.get(registerOrderCommand.ticker());
             if (ordersQueue == null) {
                 throw OrderBookException.noTicker(registerOrderCommand.ticker());
             }
@@ -134,7 +131,7 @@ class SimpleOrderBook implements OrderBook {
                 if (order != null) {
                     if (order.getVolume() <= volumeRequested) {
                         FinishedTransactionInfo boughtFinishedTransactionInfo = order.bought();
-                        this.decreaseVolume(registerOrderCommand.ticker(), order.getVolume());
+                        this.decreaseAsksVolume(registerOrderCommand.ticker(), order.getVolume());
                         ordersSoldOut.add(boughtFinishedTransactionInfo);
                         volumeBoughtInSession = volumeBoughtInSession + boughtFinishedTransactionInfo.volume();
                     }
@@ -143,7 +140,7 @@ class SimpleOrderBook implements OrderBook {
                         FinishedTransactionInfo boughtPartiallyFinishedTransactionInfo = order.boughtPartially(howMoreVolumeYet);
                         ordersSoldOut.add(boughtPartiallyFinishedTransactionInfo);
                         volumeBoughtInSession = volumeBoughtInSession + howMoreVolumeYet;
-                        this.decreaseVolume(registerOrderCommand.ticker(), howMoreVolumeYet);
+                        this.decreaseAsksVolume(registerOrderCommand.ticker(), howMoreVolumeYet);
                         ordersQueue.offer(order);
                     }
                 }
@@ -162,14 +159,14 @@ class SimpleOrderBook implements OrderBook {
     }
 
     private OrderRegistrationResult preprocessSellOrder(RegisterOrderCommand registerOrderCommand) {
-        boolean isTickerExists = sellOrdersByTicker.containsKey(registerOrderCommand.ticker());
+        boolean isTickerExists = asksOrdersByTicker.containsKey(registerOrderCommand.ticker());
         if (isTickerExists) {
-            Queue<Order> orders = sellOrdersByTicker.get(registerOrderCommand.ticker());
+            Queue<Order> orders = asksOrdersByTicker.get(registerOrderCommand.ticker());
             Order order = Order.factorize(registerOrderCommand);
             boolean offerResult = orders.offer(order);
 
             if (offerResult) {
-                this.increaseVolume(registerOrderCommand.ticker(), registerOrderCommand.volume());
+                this.increaseAsksVolume(registerOrderCommand.ticker(), registerOrderCommand.volume());
                 return OrderRegistrationResult.success(List.of(order.offerSuccessfullyRegistered()
                                                                     .toTransactionInfoWithCurrentState()));
             }
@@ -183,11 +180,11 @@ class SimpleOrderBook implements OrderBook {
         }
     }
 
-    private void increaseVolume(String ticker, long volume) {
-        volumeByTicker.merge(ticker, volume, Long::sum);
+    private void increaseAsksVolume(String ticker, long volume) {
+        asksVolumeByTicker.merge(ticker, volume, Long::sum);
     }
 
-    private void decreaseVolume(String ticker, long volume) {
-        volumeByTicker.merge(ticker, -volume, Long::sum);
+    private void decreaseAsksVolume(String ticker, long volume) {
+        asksVolumeByTicker.merge(ticker, -volume, Long::sum);
     }
 }

@@ -9,7 +9,7 @@ public class OrderUtils {
 
     public static void printOrders(SimpleOrderBook orderBook, String ticker) {
         log.info("=== SELL ORDERS BEGIN ===");
-        orderBook.getOrderQueue(ticker).forEach(order -> log.info(order.toString()));
+        orderBook.getAsksOrderQueue(ticker).forEach(order -> log.info(order.toString()));
         log.info("=== SELL ORDERS END ===");
     }
 }

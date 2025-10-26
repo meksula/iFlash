@@ -23,10 +23,11 @@ public record OrderRegistrationResult(OrderRegistrationState orderRegistrationSt
                                                        .map(FinishedTransactionInfo::volume)
                                                        .reduce(Long::sum)
                                                        .orElse(0L);
-        PartialFillDetails partialFillDetails = new PartialFillDetails(registerOrderCommand.volume(), volumeFilled, message);
+        Long volumePending = registerOrderCommand.volume() - volumeFilled;
+        PartialFillDetails partialFillDetails = new PartialFillDetails(registerOrderCommand.volume(), volumeFilled, volumePending, message);
         return new OrderRegistrationResult(OrderRegistrationState.SUCCESS, finishedTransactionInfoList, null, partialFillDetails);
     }
 
-    record PartialFillDetails(Long volumeRequested, Long volumeFilled, String message) {
+    record PartialFillDetails(Long volumeRequested, Long volumeFilled, Long volumePending, String message) {
     }
 }
