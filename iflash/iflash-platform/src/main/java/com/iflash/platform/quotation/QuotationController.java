@@ -1,7 +1,7 @@
 package com.iflash.platform.quotation;
 
 import com.iflash.commons.OrderBy;
-import com.iflash.core.quotation.CurrentQuote;
+import com.iflash.core.quotation.CurrentQuotation;
 import com.iflash.core.quotation.QuotationProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,15 +23,15 @@ class QuotationController {
 
     @GetMapping("/{ticker}/price")
     ResponseEntity<CurrentQuoteResponse> getCurrentPrice(@PathVariable String ticker) {
-        CurrentQuote currentQuote = quotationProvider.getCurrentQuote(ticker.toUpperCase());
+        CurrentQuotation currentQuotation = quotationProvider.getCurrentQuote(ticker.toUpperCase());
 
-        return ResponseEntity.ok(CurrentQuoteResponse.create(currentQuote, ticker.toUpperCase()));
+        return ResponseEntity.ok(CurrentQuoteResponse.create(currentQuotation, ticker.toUpperCase()));
     }
 
     // todo introduce pagination here class Pagination
     @GetMapping("/{ticker}/{limit}/{orderBy}")
     ResponseEntity<CurrentMultiQuoteResponse> getCurrentPrices(@PathVariable String ticker, @PathVariable Integer limit, @PathVariable OrderBy orderBy) {
-        List<CurrentQuote> lastQuotes = quotationProvider.getLastQuotes(ticker, limit, orderBy);
+        List<CurrentQuotation> lastQuotes = quotationProvider.getLastQuotes(ticker, limit, orderBy);
 
         return ResponseEntity.ok(CurrentMultiQuoteResponse.create(lastQuotes, ticker.toUpperCase()));
     }

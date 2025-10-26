@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface QuotationProvider {
 
-    CurrentQuote getCurrentQuote(String ticker);
+    CurrentQuotation getCurrentQuote(String ticker);
 
-    List<CurrentQuote> getLastQuotes(String ticker, int limit, OrderBy orderBy);
+    List<CurrentQuotation> getLastQuotes(String ticker, int limit, OrderBy orderBy);
 
     List<FinancialInstrumentInfo> getAllTickersWithQuotation();
 }

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.iflash.core.order.OrderDirection.BUY;
+import static com.iflash.core.order.OrderDirection.BID;
 
 public class QuotationAggregatorDefault implements QuotationAggregator, QuotationProvider {
 
@@ -28,7 +28,7 @@ public class QuotationAggregatorDefault implements QuotationAggregator, Quotatio
 
     @Override
     public void handle(RegisterOrderCommand registerOrderCommand, List<FinishedTransactionInfo> finishedTransactionInfos) {
-        if (BUY == registerOrderCommand.orderDirection()) {
+        if (BID == registerOrderCommand.orderDirection()) {
             if (finishedTransactionInfos.isEmpty()) {
                 return;
             }
@@ -51,7 +51,7 @@ public class QuotationAggregatorDefault implements QuotationAggregator, Quotatio
     }
 
     @Override
-    public CurrentQuote getCurrentQuote(String ticker) {
+    public CurrentQuotation getCurrentQuote(String ticker) {
         List<Quotation> quotationList = quotations.get(ticker);
         if (quotationList == null) {
             throw OrderBookException.noTicker(ticker);
@@ -64,7 +64,7 @@ public class QuotationAggregatorDefault implements QuotationAggregator, Quotatio
     }
 
     @Override
-    public List<CurrentQuote> getLastQuotes(String ticker, int limit, OrderBy orderBy) {
+    public List<CurrentQuotation> getLastQuotes(String ticker, int limit, OrderBy orderBy) {
         List<Quotation> quotationList = quotations.get(ticker);
         if (quotationList == null || quotationList.isEmpty()) {
             return Collections.emptyList();
@@ -85,12 +85,12 @@ public class QuotationAggregatorDefault implements QuotationAggregator, Quotatio
             }
             case DESC -> {
                 int fromIndex = quotationList.size() - limit;
-                List<CurrentQuote> currentQuotes = quotationList.subList(Math.max(fromIndex, 0), quotationList.size())
-                                                                .stream()
-                                                                .map(Quotation::map)
-                                                                .collect(Collectors.toList());
-                Collections.reverse(currentQuotes);
-                yield currentQuotes;
+                List<CurrentQuotation> currentQuotations = quotationList.subList(Math.max(fromIndex, 0), quotationList.size())
+                                                                        .stream()
+                                                                        .map(Quotation::map)
+                                                                        .collect(Collectors.toList());
+                Collections.reverse(currentQuotations);
+                yield currentQuotations;
             }
         };
     }

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 public record Quotation(String ticker, long quotationTimestamp, long volume, BigDecimal quotation) {
 
-    CurrentQuote map() {
-        return new CurrentQuote(quotationTimestamp, quotation);
+    CurrentQuotation map() {
+        return new CurrentQuotation(quotationTimestamp, quotation);
     }
 }

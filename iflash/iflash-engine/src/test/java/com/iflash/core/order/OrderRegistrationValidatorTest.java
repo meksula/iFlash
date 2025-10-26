@@ -2,7 +2,7 @@ package com.iflash.core.order;
 
 import com.iflash.commons.OrderBy;
 import com.iflash.core.engine.FinancialInstrumentInfo;
-import com.iflash.core.quotation.CurrentQuote;
+import com.iflash.core.quotation.CurrentQuotation;
 import com.iflash.core.quotation.QuotationProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ class OrderRegistrationValidatorTest {
         QuotationProvider quotationProvider = quotationProvider();
         OrderRegistrationValidator orderRegistrationValidator = new OrderRegistrationValidator(quotationProvider);
 
-        OrderRegistrationValidator.PriceCorridor priceCorridor = orderRegistrationValidator.calculatePriceCorridor(TOLERANCE_PERCENTAGE, new CurrentQuote(0L, CURRENT_QUOTE));
+        OrderRegistrationValidator.PriceCorridor priceCorridor = orderRegistrationValidator.calculatePriceCorridor(TOLERANCE_PERCENTAGE, new CurrentQuotation(0L, CURRENT_QUOTE));
 
         assertAll(() -> assertEquals(BigDecimal.valueOf(123.2500).setScale(4, RoundingMode.HALF_UP), priceCorridor.floorPrice()),
                   () -> assertEquals(BigDecimal.valueOf(166.7500).setScale(4, RoundingMode.HALF_UP), priceCorridor.ceilingPrice()));
@@ -64,12 +64,12 @@ class OrderRegistrationValidatorTest {
     private QuotationProvider quotationProvider() {
         return new QuotationProvider() {
             @Override
-            public CurrentQuote getCurrentQuote(String ticker) {
-                return new CurrentQuote(0L, CURRENT_QUOTE);
+            public CurrentQuotation getCurrentQuote(String ticker) {
+                return new CurrentQuotation(0L, CURRENT_QUOTE);
             }
 
             @Override
-            public List<CurrentQuote> getLastQuotes(String ticker, int limit, OrderBy orderBy) {
+            public List<CurrentQuotation> getLastQuotes(String ticker, int limit, OrderBy orderBy) {
                 return null;
             }
 

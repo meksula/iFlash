@@ -1,6 +1,6 @@
 package com.iflash.platform.quotation;
 
-import com.iflash.core.quotation.CurrentQuote;
+import com.iflash.core.quotation.CurrentQuotation;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 
 record CurrentMultiQuoteResponse(ZonedDateTime responseZonedDateTime, String ticker, List<CurrentMultiQuote> quotations) {
 
-    static CurrentMultiQuoteResponse create(List<CurrentQuote> currentQuotes, String ticker) {
-        List<CurrentMultiQuote> currentMultiQuotes = currentQuotes.stream()
-                                                         .map(currentQuote -> new CurrentMultiQuote(currentQuote.timestamp(), currentQuote.price()))
-                                                         .collect(Collectors.toList());
+    static CurrentMultiQuoteResponse create(List<CurrentQuotation> currentQuotations, String ticker) {
+        List<CurrentMultiQuote> currentMultiQuotes = currentQuotations.stream()
+                                                                      .map(currentQuote -> new CurrentMultiQuote(currentQuote.timestamp(), currentQuote.price()))
+                                                                      .collect(Collectors.toList());
         return new CurrentMultiQuoteResponse(ZonedDateTime.now(), ticker, currentMultiQuotes);
     }
 

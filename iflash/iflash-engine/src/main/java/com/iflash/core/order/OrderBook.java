@@ -13,5 +13,5 @@ public interface OrderBook {
 
     List<String> getAllTickers();
 
-    Page<OrderInformation> getOrderBookSnapshot(String ticker, Pagination pagination);
+    Page<OrderInformation> getOrderBookSnapshot(String ticker, OrderDirection orderDirection, Pagination pagination);
 }

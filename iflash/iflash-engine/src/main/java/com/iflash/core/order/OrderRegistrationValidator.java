@@ -1,6 +1,6 @@
 package com.iflash.core.order;
 
-import com.iflash.core.quotation.CurrentQuote;
+import com.iflash.core.quotation.CurrentQuotation;
 import com.iflash.core.quotation.QuotationProvider;
 import lombok.RequiredArgsConstructor;
 
@@ -18,8 +18,8 @@ public class OrderRegistrationValidator {
         if (proposedPrice == null) {
             return true;
         }
-        CurrentQuote currentQuote = quotationProvider.getCurrentQuote(ticker);
-        PriceCorridor priceCorridor = calculatePriceCorridor(PRICE_TOLERANCE_PERCENTAGE, currentQuote);
+        CurrentQuotation currentQuotation = quotationProvider.getCurrentQuote(ticker);
+        PriceCorridor priceCorridor = calculatePriceCorridor(PRICE_TOLERANCE_PERCENTAGE, currentQuotation);
 
         int floorPriceComparing = proposedPrice.compareTo(priceCorridor.floorPrice);
         int ceilingPriceComparing = proposedPrice.compareTo(priceCorridor.ceilingPrice);
@@ -27,9 +27,9 @@ public class OrderRegistrationValidator {
         return floorPriceComparing >= 0 && ceilingPriceComparing <= 0;
     }
 
-    public PriceCorridor calculatePriceCorridor(BigDecimal tolerancePercentage, CurrentQuote currentQuote) {
-        BigDecimal floorPrice = currentQuote.price().subtract(currentQuote.price().multiply(tolerancePercentage)).setScale(4, RoundingMode.HALF_UP);
-        BigDecimal ceilingPrice = currentQuote.price().add(currentQuote.price().multiply(tolerancePercentage)).setScale(4, RoundingMode.HALF_UP);
+    public PriceCorridor calculatePriceCorridor(BigDecimal tolerancePercentage, CurrentQuotation currentQuotation) {
+        BigDecimal floorPrice = currentQuotation.price().subtract(currentQuotation.price().multiply(tolerancePercentage)).setScale(4, RoundingMode.HALF_UP);
+        BigDecimal ceilingPrice = currentQuotation.price().add(currentQuotation.price().multiply(tolerancePercentage)).setScale(4, RoundingMode.HALF_UP);
         return new PriceCorridor(floorPrice, ceilingPrice);
     }
 

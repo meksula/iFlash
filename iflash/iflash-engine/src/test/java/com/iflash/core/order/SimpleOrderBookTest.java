@@ -20,7 +20,7 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
-        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, price, volume);
 
         List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(registerOrderCommand)
                                                                         .finishedTransactionInfoList();
@@ -39,7 +39,7 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
-        RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, price, volume);
 
         List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand)
                                                                         .finishedTransactionInfoList();
@@ -48,7 +48,7 @@ class SimpleOrderBookTest {
         assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
         OrderUtils.printOrders(orderBook, ticker);
 
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, price, volume);
         List<FinishedTransactionInfo> boughtAlreadyOrders = orderBook.registerOrder(buyCommand)
                                                                      .finishedTransactionInfoList();
 
@@ -68,13 +68,13 @@ class SimpleOrderBookTest {
         var volume = 1L;
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
-        RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, notExistingTicker, price, volume);
+        RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, notExistingTicker, price, volume);
 
         assertThrows(OrderBookException.class, () -> orderBook.registerOrder(sellCommand));
     }
 
     @Test
-    @DisplayName("Should reject sell order with exception if ticker exists but there are no active sell orders")
+    @DisplayName("Should not reject buy order with exception if ticker exists but there are no active sell orders - buy order should be placed on bids queue")
     void shouldRejectSellOrderWithExceptionIfTickerExistsButThereAreNoActiveSellOrders() {
         var ticker = "NVDA.US";
         var price = BigDecimal.valueOf(171.9434);
@@ -82,7 +82,7 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
-        RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, price, volume);
 
         List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand)
                                                                         .finishedTransactionInfoList();
@@ -91,10 +91,10 @@ class SimpleOrderBookTest {
         assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
         OrderUtils.printOrders(orderBook, ticker);
 
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, price, volume);
         orderBook.registerOrder(buyCommand);
 
-        assertThrows(OrderBookException.class, () -> orderBook.registerOrder(buyCommand));
+        assertDoesNotThrow(() -> orderBook.registerOrder(buyCommand));
     }
 
     @Test
@@ -105,10 +105,10 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), volume));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), volume));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, volume - 1);
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, null, volume - 1);
         orderBook.registerOrder(buyCommand);
 
         assertAll(() -> assertEquals(1, orderBook.getAsksVolume(ticker)),
@@ -125,11 +125,11 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Long volume = registerOrderCommands.stream()
@@ -152,11 +152,11 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Long volumeForSell = registerOrderCommands.stream()
@@ -166,7 +166,7 @@ class SimpleOrderBookTest {
         Long beforeBuyTransactionVolume = orderBook.getAsksVolume(ticker);
         assertEquals(volumeForSell, beforeBuyTransactionVolume);
 
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, 6L);
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, null, 6L);
         orderBook.registerOrder(buyCommand);
 
         OrderUtils.printOrders(orderBook, ticker);
@@ -188,11 +188,11 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Long volumeForSell = registerOrderCommands.stream()
@@ -202,7 +202,7 @@ class SimpleOrderBookTest {
         Long beforeBuyTransactionVolume = orderBook.getAsksVolume(ticker);
         assertEquals(volumeForSell, beforeBuyTransactionVolume);
 
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, volumeForSell);
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, null, volumeForSell);
         orderBook.registerOrder(buyCommand);
 
         OrderUtils.printOrders(orderBook, ticker);
@@ -216,32 +216,6 @@ class SimpleOrderBookTest {
     }
 
     @Test
-    @DisplayName("Should not allow to selling if available volume is not enough")
-    void shouldNotAllowToSellingIfAvailableVolumeIsNotEnough() {
-        var ticker = "NVDA.US";
-
-        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
-        orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
-        registerOrderCommands.forEach(orderBook::registerOrder);
-
-        Long volumeForSell = registerOrderCommands.stream()
-                                                  .map(RegisterOrderCommand::volume)
-                                                  .reduce(Long::sum)
-                                                  .get();
-        Long beforeBuyTransactionVolume = orderBook.getAsksVolume(ticker);
-        assertEquals(volumeForSell, beforeBuyTransactionVolume);
-
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, volumeForSell + 1);
-
-        assertThrows(OrderBookException.class, () -> orderBook.registerOrder(buyCommand));
-    }
-
-    @Test
     @DisplayName("Should correctly process Partial fill order type")
     void shouldCorrectlyProcessPartialFillOrderType() {
         var ticker = "NVDA.US";
@@ -249,11 +223,11 @@ class SimpleOrderBookTest {
         Long missingLimitOrders = 10L;
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(OrderDirection.SELL, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Long totalAvailableVolume = registerOrderCommands.stream()
@@ -262,20 +236,45 @@ class SimpleOrderBookTest {
                                                          .get();
         Long requestedVolumeHigherThanAvailable = totalAvailableVolume + missingLimitOrders;
 
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, null, requestedVolumeHigherThanAvailable);
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, null, requestedVolumeHigherThanAvailable);
 
         OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(buyCommand);
 
         assertAll(() -> assertEquals(0, orderBook.getAsksVolume(ticker)),
-                  () -> assertEquals(requestedVolumeHigherThanAvailable, orderRegistrationResult.partialFillDetails().volumeRequested()),
-                  () -> assertEquals(totalAvailableVolume, orderRegistrationResult.partialFillDetails().volumeFilled()),
-                  () -> assertEquals(missingLimitOrders, orderRegistrationResult.partialFillDetails().volumePending()));
+                  () -> assertEquals(requestedVolumeHigherThanAvailable, orderRegistrationResult.orderFillDetails().volumeRequested()),
+                  () -> assertEquals(totalAvailableVolume, orderRegistrationResult.orderFillDetails().volumeFilled()),
+                  () -> assertEquals(missingLimitOrders, orderRegistrationResult.orderFillDetails().volumePending()));
     }
 
     @Test
     @DisplayName("Should correctly process Partial fill order type and rest of order's volume should be put in bids queue")
     void shouldCorrectlyProcessPartialFillOrderTypeAndRestOfOrdersVolumeShouldBePutInBidsQueue() {
+        var ticker = "NVDA.US";
 
+        Long missingLimitOrders = 10L;
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        orderBook.registerTicker(ticker);
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+
+        Long totalAvailableVolume = registerOrderCommands.stream()
+                                                         .map(RegisterOrderCommand::volume)
+                                                         .reduce(Long::sum)
+                                                         .get();
+        Long requestedVolumeHigherThanAvailable = totalAvailableVolume + missingLimitOrders;
+
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, null, requestedVolumeHigherThanAvailable);
+
+        OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(buyCommand);
+
+        assertAll(() -> assertEquals(0, orderBook.getAsksVolume(ticker)),
+                  () -> assertEquals(requestedVolumeHigherThanAvailable, orderRegistrationResult.orderFillDetails().volumeRequested()),
+                  () -> assertEquals(totalAvailableVolume, orderRegistrationResult.orderFillDetails().volumeFilled()),
+                  () -> assertEquals(missingLimitOrders, orderRegistrationResult.orderFillDetails().volumePending()));
     }
 
     private boolean containsUuid(Queue<Order> orderQueue, List<FinishedTransactionInfo> registeredTransactions) {

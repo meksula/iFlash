@@ -1,7 +1,6 @@
 package com.iflash.core.quotation;
 
 import com.iflash.commons.OrderBy;
-import com.iflash.commons.ValidateUtils;
 import com.iflash.core.order.OrderDirection;
 import com.iflash.core.order.OrderType;
 import com.iflash.core.order.RegisterOrderCommand;
@@ -41,7 +40,7 @@ class QuotationAggregatorDefaultTest {
         QuotationCalculable quotationCalculable = new WeightedAverageQuotation();
         QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations);
 
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BUY, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, price, volume);
         List<FinishedTransactionInfo> finishedTransactionInfos = List.of(
                 new FinishedTransactionInfo(UUID.randomUUID(), ticker, 10, BigDecimal.valueOf(171.734)),
                 new FinishedTransactionInfo(UUID.randomUUID(), ticker, 10, BigDecimal.valueOf(171.256)),
@@ -50,14 +49,14 @@ class QuotationAggregatorDefaultTest {
         );
 
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
-        CurrentQuote beforeTradeCurrentQuote = quotationProvider.getCurrentQuote(ticker);
+        CurrentQuotation beforeTradeCurrentQuotation = quotationProvider.getCurrentQuote(ticker);
 
         quotationAggregator.handle(buyCommand, finishedTransactionInfos);
 
-        CurrentQuote afterTradeCurrentQuote = quotationProvider.getCurrentQuote(ticker);
+        CurrentQuotation afterTradeCurrentQuotation = quotationProvider.getCurrentQuote(ticker);
 
-        assertAll(() -> assertEquals(BigDecimal.valueOf(170.9434), beforeTradeCurrentQuote.price()),
-                  () -> assertEquals(BigDecimal.valueOf(171.4900).setScale(4, RoundingMode.HALF_UP), afterTradeCurrentQuote.price().setScale(4, RoundingMode.HALF_UP)));
+        assertAll(() -> assertEquals(BigDecimal.valueOf(170.9434), beforeTradeCurrentQuotation.price()),
+                  () -> assertEquals(BigDecimal.valueOf(171.4900).setScale(4, RoundingMode.HALF_UP), afterTradeCurrentQuotation.price().setScale(4, RoundingMode.HALF_UP)));
     }
 
     @Test
@@ -83,8 +82,8 @@ class QuotationAggregatorDefaultTest {
         QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations);
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
 
-        List<CurrentQuote> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.ASC);
-        List<CurrentQuote> lastQuotesDesc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.DESC);
+        List<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.ASC);
+        List<CurrentQuotation> lastQuotesDesc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.DESC);
 
         assertAll(() -> assertEquals(1, lastQuotesAsc.size()),
                   () -> assertEquals(1, lastQuotesDesc.size()));
@@ -103,7 +102,7 @@ class QuotationAggregatorDefaultTest {
         QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations);
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
 
-        List<CurrentQuote> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.ASC);
+        List<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.ASC);
 
         assertAll(() -> assertEquals(lastQuotesAsc.get(0).price(), quotations.get(ticker).get(0).quotation()),
                   () -> assertEquals(lastQuotesAsc.get(1).price(), quotations.get(ticker).get(1).quotation()),
@@ -123,7 +122,7 @@ class QuotationAggregatorDefaultTest {
         QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations);
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
 
-        List<CurrentQuote> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.DESC);
+        List<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.DESC);
 
         assertAll(() -> assertEquals(lastQuotesAsc.get(0).price(), quotations.get(ticker).get(2).quotation()),
                   () -> assertEquals(lastQuotesAsc.get(1).price(), quotations.get(ticker).get(1).quotation()),

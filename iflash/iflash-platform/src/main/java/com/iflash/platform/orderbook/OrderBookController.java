@@ -4,6 +4,7 @@ import com.iflash.commons.OrderBy;
 import com.iflash.commons.Page;
 import com.iflash.commons.Pagination;
 import com.iflash.core.engine.OrderBookOperations;
+import com.iflash.core.order.OrderDirection;
 import com.iflash.core.order.OrderInformation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,14 +27,15 @@ public class OrderBookController {
 
     @GetMapping("/{ticker}")
     ResponseEntity<OrderBookSnapshotResponse> getCurrentPrice(@PathVariable String ticker,
+                                                              @RequestParam(required = true) OrderDirection orderDirection,
                                                               @RequestParam(defaultValue = "0") int page,
                                                               @RequestParam(defaultValue = "20") int size,
                                                               @RequestParam(defaultValue = "ASC") OrderBy orderBy) {
         Pagination pagination = new Pagination(page, size, orderBy);
-        Page<OrderInformation> orderBookSnapshot = orderBookOperations.getOrderBookSnapshot(ticker, pagination);
+        Page<OrderInformation> orderBookSnapshot = orderBookOperations.getOrderBookSnapshot(ticker, orderDirection, pagination);
         Page<OrderBookSnapshotResponse.OrderBookEntry> orderBookEntryPage = orderBookSnapshot.map(orderInfo -> new OrderBookSnapshotResponse.OrderBookEntry(orderInfo.orderCreationDate(), orderInfo.price(), orderInfo.volume()));
 
-        OrderBookSnapshotResponse orderBookSnapshotResponse = new OrderBookSnapshotResponse(ZonedDateTime.now(), ticker, orderBookEntryPage);
+        OrderBookSnapshotResponse orderBookSnapshotResponse = new OrderBookSnapshotResponse(ZonedDateTime.now(), ticker, orderDirection, orderBookEntryPage);
 
         return ResponseEntity.ok(orderBookSnapshotResponse);
     }

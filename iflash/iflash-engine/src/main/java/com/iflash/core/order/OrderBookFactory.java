@@ -8,7 +8,7 @@ public class OrderBookFactory {
 
     public static OrderBook factorizeOrderBook() {
         Map<String, Queue<Order>> sellOrdersByTicker = new HashMap<>();
-        Map<String, Long> volumeByTicker = new HashMap<>();
-        return new SimpleOrderBook(sellOrdersByTicker, volumeByTicker);
+        Map<String, Queue<Order>> bidsOrdersByTicker = new HashMap<>();
+        return new SimpleOrderBook(sellOrdersByTicker, bidsOrdersByTicker);
     }
 }
