@@ -15,7 +15,7 @@ public record RegisterOrderCommand(OrderDirection orderDirection,
         return new RegisterOrderCommand(orderDirection, orderType, ticker, currentQuotation.price().add(spread), volume);
     }
 
-    public RegisterOrderCommand createAfterPartiallyFilled(CurrentQuotation currentQuotation, Long volume) {
+    public RegisterOrderCommand createAfterPartialFillment(CurrentQuotation currentQuotation, Long volume) {
         return new RegisterOrderCommand(orderDirection, LIMIT, ticker, currentQuotation.price(), volume);
     }
 }

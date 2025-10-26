@@ -9,6 +9,6 @@ public class QuotationAggregatorFactory {
             case WEIGHTED_AVERAGE ->  new WeightedAverageQuotation();
         };
 
-        return new QuotationAggregatorDefault(quotationCalculable, new HashMap<>());
+        return new QuotationAggregatorDefault(quotationCalculable, new HashMap<>(), new HashMap<>());
     }
 }

@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface QuotationCalculable {
 
-    Quotation calculate(String ticker, List<BoughtTransactionInfo> boughtTransactionInfos);
+    Quotation calculate(String ticker, List<QuotableInformation> quotableInformations);
 }

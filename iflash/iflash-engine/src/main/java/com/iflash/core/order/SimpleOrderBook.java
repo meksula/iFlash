@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.stream.Collectors;
 
@@ -44,9 +45,10 @@ class SimpleOrderBook implements OrderBook {
 
     @Override
     public void registerTicker(String ticker) {
-        Queue<Order> ordersQueue = new PriorityBlockingQueue<>();
-        this.asksOrdersByTicker.putIfAbsent(ticker, ordersQueue);
-        this.bidsOrdersByTicker.putIfAbsent(ticker, ordersQueue);
+        Queue<Order> askOrdersQueue = new PriorityBlockingQueue<>();
+        Queue<Order> bidsOrdersQueue = new PriorityBlockingQueue<>();
+        this.asksOrdersByTicker.putIfAbsent(ticker, askOrdersQueue);
+        this.bidsOrdersByTicker.putIfAbsent(ticker, bidsOrdersQueue);
         log.info("Company with ticker: {} registered", ticker);
     }
 
@@ -111,7 +113,6 @@ class SimpleOrderBook implements OrderBook {
             if (asksOrdersQueue == null) {
                 throw OrderBookException.noTicker(registerOrderCommand.ticker());
             }
-
             List<FinishedTransactionInfo> ordersSoldOut = new ArrayList<>(0);
             long volumeRequested = registerOrderCommand.volume();
             long volumeBoughtInSession = 0L;
@@ -134,11 +135,10 @@ class SimpleOrderBook implements OrderBook {
                 }
                 else {
                     log.info("Partially Fill occured, requested volume: {}, filled volume: {}", volumeRequested, volumeBoughtInSession);
-                    // todo tutaj należy złożyć zlecenie do bids
-                    return OrderRegistrationResult.partiallySuccess(ordersSoldOut, registerOrderCommand);
+                    return OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut, registerOrderCommand);
                 }
             }
-            return OrderRegistrationResult.success(ordersSoldOut);
+            return OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut);
         }
         if (LIMIT == registerOrderCommand.orderType()) {
             Queue<Order> bidsOrdersQueue = bidsOrdersByTicker.get(registerOrderCommand.ticker());
@@ -147,7 +147,7 @@ class SimpleOrderBook implements OrderBook {
             }
             Order bidOrder = Order.factorize(registerOrderCommand);
             bidsOrdersQueue.add(bidOrder);
-            return OrderRegistrationResult.limitOrderSuccess(registerOrderCommand);
+            return OrderRegistrationResult.limitOrderPlacedSuccessfully(registerOrderCommand);
         }
         throw OrderBookException.orderTypeNotAvailable(registerOrderCommand.orderType());
     }
@@ -160,8 +160,8 @@ class SimpleOrderBook implements OrderBook {
             boolean offerResult = orders.offer(order);
 
             if (offerResult) {
-                return OrderRegistrationResult.success(List.of(order.offerSuccessfullyRegistered()
-                                                                    .toTransactionInfoWithCurrentState()));
+                return OrderRegistrationResult.transactionPartiallyCompleted(List.of(order.offerSuccessfullyRegistered()
+                                                                                          .toTransactionInfoWithCurrentState()));
             }
             else {
                 return OrderRegistrationResult.failure(List.of(order.offerRegistrationFailed()
@@ -171,6 +171,21 @@ class SimpleOrderBook implements OrderBook {
         else {
             throw OrderBookException.noTicker(registerOrderCommand.ticker());
         }
+    }
+
+    @Override
+    public Set<OrderInformation> getTopOrders(String ticker, OrderDirection orderDirection, Integer depth) {
+        Queue<Order> orders = select(orderDirection).get(ticker);
+        List<Order> ordersDump = List.copyOf(orders);
+        if (ordersDump.size() <= depth) {
+            return ordersDump.stream()
+                             .map(Order::orderInformation)
+                             .collect(Collectors.toSet());
+        }
+        return ordersDump.subList(depth, ordersDump.size())
+                         .stream()
+                         .map(Order::orderInformation)
+                         .collect(Collectors.toSet());
     }
 
     public Queue<Order> getAsksOrderQueue(String ticker) {

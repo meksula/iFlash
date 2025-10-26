@@ -30,6 +30,7 @@ class QuotationAggregatorDefaultTest {
     @DisplayName("Should correctly calculate Quotation for Financial Instrument when buy order finished")
     void shouldCorrectlyCalculateQuotationForFinancialInstrumentWhenBuyOrderFinished() {
         Map<String, List<Quotation>> quotations = new HashMap<>();
+        Map<String, List<Quotation>> theoreticalQuotations = new HashMap<>();
         List<Quotation> quotationList = new ArrayList<>();
         quotationList.add(new Quotation(ticker, System.currentTimeMillis(), volume, BigDecimal.valueOf(171.9034)));
         quotationList.add(new Quotation(ticker, System.currentTimeMillis(), volume, BigDecimal.valueOf(171.9034)));
@@ -38,7 +39,7 @@ class QuotationAggregatorDefaultTest {
         quotations.put(ticker, quotationList);
 
         QuotationCalculable quotationCalculable = new WeightedAverageQuotation();
-        QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations);
+        QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations, theoreticalQuotations);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, price, volume);
         List<FinishedTransactionInfo> finishedTransactionInfos = List.of(
@@ -51,7 +52,7 @@ class QuotationAggregatorDefaultTest {
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
         CurrentQuotation beforeTradeCurrentQuotation = quotationProvider.getCurrentQuote(ticker);
 
-        quotationAggregator.handle(buyCommand, finishedTransactionInfos);
+        quotationAggregator.calculateQuotationPostTransaction(buyCommand.ticker(), finishedTransactionInfos);
 
         CurrentQuotation afterTradeCurrentQuotation = quotationProvider.getCurrentQuote(ticker);
 
@@ -65,7 +66,7 @@ class QuotationAggregatorDefaultTest {
         Map<String, List<Quotation>> quotations = new HashMap<>();
 
         QuotationCalculable quotationCalculable = new WeightedAverageQuotation();
-        QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations);
+        QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations, new HashMap<>());
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
 
         assertAll(() -> assertDoesNotThrow(() -> quotationProvider.getLastQuotes(ticker, 10, OrderBy.ASC)),
@@ -79,7 +80,7 @@ class QuotationAggregatorDefaultTest {
         quotations.put(ticker, List.of(new Quotation(ticker, System.currentTimeMillis(), volume, price)));
 
         QuotationCalculable quotationCalculable = new WeightedAverageQuotation();
-        QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations);
+        QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations, new HashMap<>());
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
 
         List<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.ASC);
@@ -99,7 +100,7 @@ class QuotationAggregatorDefaultTest {
                 new Quotation(ticker, System.currentTimeMillis(), volume, BigDecimal.valueOf(3))));
 
         QuotationCalculable quotationCalculable = new WeightedAverageQuotation();
-        QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations);
+        QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations, new HashMap<>());
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
 
         List<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.ASC);
@@ -119,7 +120,7 @@ class QuotationAggregatorDefaultTest {
                 new Quotation(ticker, System.currentTimeMillis(), volume, BigDecimal.valueOf(3))));
 
         QuotationCalculable quotationCalculable = new WeightedAverageQuotation();
-        QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations);
+        QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations, new HashMap<>());
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
 
         List<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.DESC);
