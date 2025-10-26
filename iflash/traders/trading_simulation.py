@@ -202,6 +202,136 @@ class ETFTrader(TraderStrategy):
                 trader.try_place_sell(price, qty)
                 self.capital += qty * price
 
+class MomentumTrader(TraderStrategy):
+    """
+    Kupuje, jeśli cena rośnie (momentum) — sprzedaje, jeśli spada.
+    """
+    def __init__(self):
+        self.prev_price = None
+
+    def execute(self, snapshot, trader):
+        price = snapshot.best_ask
+        if price is None:
+            return
+
+        if self.prev_price is not None:
+            if price > self.prev_price * 1.002:  # wzrost >0.2%
+                trader.try_place_buy(price, 10)
+            elif price < self.prev_price * 0.998:  # spadek >0.2%
+                trader.try_place_sell(price, 10)
+
+        self.prev_price = price
+
+class MeanReversionTrader(TraderStrategy):
+    """
+    Kupuje, gdy cena spada poniżej średniej; sprzedaje powyżej średniej.
+    Typowa strategia „powrotu do średniej”.
+    """
+    def __init__(self, lookback=15):
+        self.lookback = lookback
+        self.history = []
+
+    def execute(self, snapshot, trader):
+        price = snapshot.best_ask
+        if price is None:
+            return
+
+        self.history.append(price)
+        if len(self.history) > self.lookback:
+            self.history.pop(0)
+
+        avg = sum(self.history) / len(self.history)
+        if len(self.history) < self.lookback:
+            return  # nie mamy jeszcze pełnej historii
+
+        if price < avg * 0.98:  # 2% poniżej średniej
+            trader.try_place_buy(price, 10)
+        elif price > avg * 1.02:  # 2% powyżej średniej
+            trader.try_place_sell(price, 10)
+
+class LiquiditySeeker(TraderStrategy):
+    """
+    Handluje tylko wtedy, gdy na rynku jest wystarczająca płynność (duży wolumen).
+    """
+    def execute(self, snapshot, trader):
+        total_ask_vol = snapshot.total_ask_volume()
+        total_bid_vol = snapshot.total_bid_volume()
+        price = snapshot.best_ask
+
+        if not price:
+            return
+
+        if total_ask_vol > 1000 and total_bid_vol > 1000:
+            if random.random() < 0.5:
+                trader.try_place_buy(price, 20)
+            else:
+                trader.try_place_sell(price, 20)
+
+class ScalperTrader(TraderStrategy):
+    """
+    Scalper – próbuje szybko kupować i sprzedawać na małych ruchach cenowych.
+    """
+    def __init__(self):
+        self.last_price = None
+
+    def execute(self, snapshot, trader):
+        price = snapshot.best_ask
+        if price is None:
+            return
+        if self.last_price is not None:
+            delta = (price - self.last_price) / self.last_price
+            if delta < -0.001:  # spadek >0.1%
+                trader.try_place_buy(price, 5)
+            elif delta > 0.001:  # wzrost >0.1%
+                trader.try_place_sell(price, 5)
+        self.last_price = price
+
+class RiskAverseTrader(TraderStrategy):
+    """
+    Bardzo ostrożny trader – inwestuje tylko, gdy cena jest stabilna przez dłuższy czas.
+    """
+    def __init__(self, stability_window=5):
+        self.history = []
+        self.stability_window = stability_window
+
+    def execute(self, snapshot, trader):
+        price = snapshot.best_ask
+        if price is None:
+            return
+
+        self.history.append(price)
+        if len(self.history) > self.stability_window:
+            self.history.pop(0)
+
+        if len(self.history) < self.stability_window:
+            return
+
+        mean = sum(self.history) / len(self.history)
+        variance = sum((p - mean)**2 for p in self.history) / len(self.history)
+
+        if variance < 0.05:  # stabilny rynek
+            trader.try_place_buy(price, 3)
+
+class ContrarianTrader(TraderStrategy):
+    """
+    Trader kontrariański – robi odwrotnie do kierunku rynku.
+    Kupuje przy spadkach, sprzedaje przy wzrostach.
+    """
+    def __init__(self):
+        self.prev_price = None
+
+    def execute(self, snapshot, trader):
+        price = snapshot.best_ask
+        if price is None:
+            return
+
+        if self.prev_price is not None:
+            if price < self.prev_price * 0.995:
+                trader.try_place_buy(price, 15)
+            elif price > self.prev_price * 1.005:
+                trader.try_place_sell(price, 15)
+        self.prev_price = price
+
 # -----------------------------
 # TRADER THREAD
 # -----------------------------
@@ -294,7 +424,11 @@ def monitor_capital(traders: List[TraderThread], interval=1800):
     return thread
 
 def main():
-    strategy_classes = [AggressiveTrader, PassiveTrader, RandomTrader, ETFTrader]
+    strategy_classes = [
+            AggressiveTrader, PassiveTrader, RandomTrader, ETFTrader,
+            MomentumTrader, MeanReversionTrader, LiquiditySeeker,
+            ScalperTrader, RiskAverseTrader, ContrarianTrader
+        ]
 
     trader_threads: List[TraderThread] = []
     for cls in strategy_classes:
