@@ -26,6 +26,9 @@ class SimpleOrderBook implements OrderBook {
     private final Map<String, Queue<Order>> asksOrdersByTicker;
     private final Map<String, Queue<Order>> bidsOrdersByTicker;
 
+    private final MarketOrderProcessor marketOrderProcessor;
+    private final LimitOrderProcessor limitOrderProcessor;
+
     private SimpleOrderBook() {
         throw OrderBookException.cannotCreate();
     }
@@ -33,14 +36,20 @@ class SimpleOrderBook implements OrderBook {
     SimpleOrderBook(Map<String, Queue<Order>> asksOrdersByTicker, Map<String, Queue<Order>> bidsOrdersByTicker) {
         this.asksOrdersByTicker = asksOrdersByTicker;
         this.bidsOrdersByTicker = bidsOrdersByTicker;
+
+        this.marketOrderProcessor = new MarketOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker);
+        this.limitOrderProcessor = new LimitOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker);
     }
 
     @Override
     public OrderRegistrationResult registerOrder(RegisterOrderCommand registerOrderCommand) {
-        return switch (registerOrderCommand.orderDirection()) {
-            case BID -> preprocessBuyOrder(registerOrderCommand);
-            case ASK -> preprocessSellOrder(registerOrderCommand);
-        };
+        if (MARKET == registerOrderCommand.orderType()) {
+            return marketOrderProcessor.processMarketOrder(registerOrderCommand);
+        }
+        if (LIMIT == registerOrderCommand.orderType()) {
+            return limitOrderProcessor.processLimitOrder(registerOrderCommand);
+        }
+        throw OrderBookException.orderTypeNotAvailable(registerOrderCommand.orderType());
     }
 
     @Override
@@ -107,72 +116,6 @@ class SimpleOrderBook implements OrderBook {
                                  .toList();
     }
 
-    private OrderRegistrationResult preprocessBuyOrder(RegisterOrderCommand registerOrderCommand) {
-        if (MARKET == registerOrderCommand.orderType()) {
-            Queue<Order> asksOrdersQueue = asksOrdersByTicker.get(registerOrderCommand.ticker());
-            if (asksOrdersQueue == null) {
-                throw OrderBookException.noTicker(registerOrderCommand.ticker());
-            }
-            List<FinishedTransactionInfo> ordersSoldOut = new ArrayList<>(0);
-            long volumeRequested = registerOrderCommand.volume();
-            long volumeBoughtInSession = 0L;
-
-            while (volumeBoughtInSession < volumeRequested) {
-                Order order = asksOrdersQueue.poll();
-                if (order != null) {
-                    if (order.getVolume() <= volumeRequested) {
-                        FinishedTransactionInfo boughtFinishedTransactionInfo = order.bought();
-                        ordersSoldOut.add(boughtFinishedTransactionInfo);
-                        volumeBoughtInSession = volumeBoughtInSession + boughtFinishedTransactionInfo.volume();
-                    }
-                    else {
-                        long howMoreVolumeYet = volumeRequested - volumeBoughtInSession;
-                        FinishedTransactionInfo boughtPartiallyFinishedTransactionInfo = order.boughtPartially(howMoreVolumeYet);
-                        ordersSoldOut.add(boughtPartiallyFinishedTransactionInfo);
-                        volumeBoughtInSession = volumeBoughtInSession + howMoreVolumeYet;
-                        asksOrdersQueue.offer(order);
-                    }
-                }
-                else {
-                    log.info("Partially Fill occured, requested volume: {}, filled volume: {}", volumeRequested, volumeBoughtInSession);
-                    return OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut, registerOrderCommand);
-                }
-            }
-            return OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut);
-        }
-        if (LIMIT == registerOrderCommand.orderType()) {
-            Queue<Order> bidsOrdersQueue = bidsOrdersByTicker.get(registerOrderCommand.ticker());
-            if (bidsOrdersQueue == null) {
-                throw OrderBookException.noTicker(registerOrderCommand.ticker());
-            }
-            Order bidOrder = Order.factorize(registerOrderCommand);
-            bidsOrdersQueue.add(bidOrder);
-            return OrderRegistrationResult.limitOrderPlacedSuccessfully(registerOrderCommand);
-        }
-        throw OrderBookException.orderTypeNotAvailable(registerOrderCommand.orderType());
-    }
-
-    private OrderRegistrationResult preprocessSellOrder(RegisterOrderCommand registerOrderCommand) {
-        boolean isTickerExists = asksOrdersByTicker.containsKey(registerOrderCommand.ticker());
-        if (isTickerExists) {
-            Queue<Order> orders = asksOrdersByTicker.get(registerOrderCommand.ticker());
-            Order order = Order.factorize(registerOrderCommand);
-            boolean offerResult = orders.offer(order);
-
-            if (offerResult) {
-                return OrderRegistrationResult.transactionPartiallyCompleted(List.of(order.offerSuccessfullyRegistered()
-                                                                                          .toTransactionInfoWithCurrentState()));
-            }
-            else {
-                return OrderRegistrationResult.failure(List.of(order.offerRegistrationFailed()
-                                                                    .toTransactionInfoWithCurrentState()), "Could not register your sell order");
-            }
-        }
-        else {
-            throw OrderBookException.noTicker(registerOrderCommand.ticker());
-        }
-    }
-
     @Override
     public Set<OrderInformation> getTopOrders(String ticker, OrderDirection orderDirection, Integer depth) {
         Queue<Order> orders = select(orderDirection).get(ticker);
@@ -190,6 +133,10 @@ class SimpleOrderBook implements OrderBook {
 
     public Queue<Order> getAsksOrderQueue(String ticker) {
         return asksOrdersByTicker.get(ticker);
+    }
+
+    public Queue<Order> getBidsOrderQueue(String ticker) {
+        return bidsOrdersByTicker.get(ticker);
     }
 
     public boolean isAsksVolumeAvailable(String ticker, Long volumeRequested) {

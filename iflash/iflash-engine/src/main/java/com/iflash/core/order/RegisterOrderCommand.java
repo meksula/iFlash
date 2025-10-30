@@ -11,6 +11,7 @@ public record RegisterOrderCommand(OrderDirection orderDirection,
                                    String ticker,
                                    BigDecimal price,
                                    Long volume) {
+
     public RegisterOrderCommand withMarketPricePlusSpread(CurrentQuotation currentQuotation, BigDecimal spread) {
         return new RegisterOrderCommand(orderDirection, orderType, ticker, currentQuotation.price().add(spread), volume);
     }

@@ -69,41 +69,38 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
     }
 
     @Override
-    public OrderRegistrationResult registerOrder(RegisterOrderCommand registerOrderCommand) {
-        // todo refactor, not good place for that logic, temporary workaround
-        if (ASK == registerOrderCommand.orderDirection() && registerOrderCommand.price() == null) {
-            RegisterOrderCommand registerOrderCommandWithSpread = registerOrderCommand.withMarketPricePlusSpread(quotationProvider().getCurrentQuote(registerOrderCommand.ticker()),
-                                                                                                                 BigDecimal.valueOf(0.0100)
-                                                                                                                           .setScale(4, RoundingMode.HALF_UP));
-            return orderBook.registerOrder(registerOrderCommandWithSpread);
-        }
-        // todo i think i need move this to OrderBookManager or sth
+    public OrderRegistrationResult registerOrder(RegisterOrderCommand incomingRegisterOrderCommand) {
+        RegisterOrderCommand registerOrderCommand = incomingRegisterOrderCommand.withMarketPricePlusSpread(quotationProvider().getCurrentQuote(incomingRegisterOrderCommand.ticker()),
+                                                                                                           BigDecimal.valueOf(0.0100).setScale(4, RoundingMode.HALF_UP));
         boolean orderRegistrationPriceValid = orderRegistrationValidator.isOrderRegistrationPriceValid(registerOrderCommand.ticker(), registerOrderCommand.price());
         if (orderRegistrationPriceValid) {
             OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(registerOrderCommand);
             switch (orderRegistrationResult.transactionPhase()) {
-                case FULLY_COMPLETED -> {
-                    List<FinishedTransactionInfo> finishedTransactionInfos = orderRegistrationResult.finishedTransactionInfoList();
-                    CompletableFuture.runAsync(() -> quotationAggregator.calculateQuotationPostTransaction(registerOrderCommand.ticker(), finishedTransactionInfos));
-                }
-                case PARTIALLY_COMPLETED -> {
-                    List<FinishedTransactionInfo> finishedTransactionInfos = orderRegistrationResult.finishedTransactionInfoList();
-                    CurrentQuotation currentQuotation = quotationProvider.getCurrentQuote(registerOrderCommand.ticker());
-                    RegisterOrderCommand afterPartialFillment = registerOrderCommand.createAfterPartialFillment(currentQuotation, orderRegistrationResult.orderFillDetails().volumePending());
-                    CompletableFuture.runAsync(() -> quotationAggregator.calculateQuotationPostTransaction(registerOrderCommand.ticker(), finishedTransactionInfos));
-                    orderRegistrationResult = orderBook.registerOrder(afterPartialFillment);
-                }
-                case IDLING_ON_QUEUE -> {
-                    Set<OrderInformation> topBids = orderBook.getTopOrders(registerOrderCommand.ticker(), BID, QUOTATION_CALCULATE_DEPTH);
-                    Set<OrderInformation> topAsks = orderBook.getTopOrders(registerOrderCommand.ticker(), ASK, QUOTATION_CALCULATE_DEPTH);
-                    CompletableFuture.runAsync(() -> quotationAggregator.calculateTheoreticalQuotation(registerOrderCommand.ticker(), topBids, topAsks));
-                }
-                case REJECTED -> {
-                    log.warn("Order is rejected");
-                }
+            case FULLY_COMPLETED -> {
+                List<FinishedTransactionInfo> finishedTransactionInfos = orderRegistrationResult.finishedTransactionInfoList();
+                CompletableFuture.runAsync(() -> quotationAggregator.calculateQuotationPostTransaction(registerOrderCommand.ticker(), finishedTransactionInfos));
+            }
+            case PARTIALLY_COMPLETED -> {
+                List<FinishedTransactionInfo> finishedTransactionInfos = orderRegistrationResult.finishedTransactionInfoList();
+                CurrentQuotation currentQuotation = quotationProvider.getCurrentQuote(registerOrderCommand.ticker());
+                RegisterOrderCommand afterPartialFillment = registerOrderCommand.createAfterPartialFillment(currentQuotation,
+                                                                                                            orderRegistrationResult.orderFillDetails()
+                                                                                                                                   .volumePending());
+                CompletableFuture.runAsync(() -> quotationAggregator.calculateQuotationPostTransaction(registerOrderCommand.ticker(), finishedTransactionInfos));
+                orderRegistrationResult = orderBook.registerOrder(afterPartialFillment);
+            }
+            case IDLING_ON_QUEUE -> {
+                Set<OrderInformation> topBids = orderBook.getTopOrders(registerOrderCommand.ticker(), BID, QUOTATION_CALCULATE_DEPTH);
+                Set<OrderInformation> topAsks = orderBook.getTopOrders(registerOrderCommand.ticker(), ASK, QUOTATION_CALCULATE_DEPTH);
+                CompletableFuture.runAsync(() -> quotationAggregator.calculateTheoreticalQuotation(registerOrderCommand.ticker(), topBids, topAsks));
+            }
+            case REJECTED -> {
+                log.warn("Order is rejected");
+            }
             }
             return orderRegistrationResult;
-        } else {
+        }
+        else {
             throw OrderBookException.cannotCreateOrder(registerOrderCommand.price());
         }
     }

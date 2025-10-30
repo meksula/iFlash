@@ -12,43 +12,43 @@ import static org.junit.jupiter.api.Assertions.*;
 class SimpleOrderBookTest {
 
     @Test
-    @DisplayName("Should correctly add sell Order if ticker is not exists")
+    @DisplayName("Should correctly add sell Order if ticker is not exists, if bids queue is empty we treat MARKET sell as LIMIT and put it on queue")
     void shouldCorrectlyAddSellOrderIfTickerDoesNotExist() {
         var ticker = "NVDA.US";
-        var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
-        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, null, volume);
 
-        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(registerOrderCommand)
+        List<FinishedTransactionInfo> finishedTransactions = orderBook.registerOrder(registerOrderCommand)
                                                                         .finishedTransactionInfoList();
         Queue<Order> orderQueue = orderBook.getAsksOrderQueue(ticker);
 
-        assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
+        assertAll(() -> assertEquals(0, finishedTransactions.size()),
+                  () -> assertEquals(1, orderQueue.size()));
         OrderUtils.printOrders(orderBook, ticker);
     }
 
     @Test
-    @DisplayName("Should correctly instant buy Order")
+    @DisplayName("Should correctly process ASK order and instant BID order after that")
     void shouldCorrectlyInstantBuyOrder() {
         var ticker = "NVDA.US";
-        var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
-        RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, null, volume);
 
-        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand)
-                                                                        .finishedTransactionInfoList();
+        List<FinishedTransactionInfo> finishedTransactions = orderBook.registerOrder(sellCommand)
+                                                                      .finishedTransactionInfoList();
         Queue<Order> orderQueue = orderBook.getAsksOrderQueue(ticker);
 
-        assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
+        assertAll(() -> assertEquals(0, finishedTransactions.size()),
+                  () -> assertEquals(1, orderQueue.size()));
         OrderUtils.printOrders(orderBook, ticker);
 
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, null, volume);
         List<FinishedTransactionInfo> boughtAlreadyOrders = orderBook.registerOrder(buyCommand)
                                                                      .finishedTransactionInfoList();
 
@@ -77,21 +77,21 @@ class SimpleOrderBookTest {
     @DisplayName("Should not reject buy order with exception if ticker exists but there are no active sell orders - buy order should be placed on bids queue")
     void shouldRejectSellOrderWithExceptionIfTickerExistsButThereAreNoActiveSellOrders() {
         var ticker = "NVDA.US";
-        var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
         orderBook.registerTicker(ticker);
-        RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, null, volume);
 
-        List<FinishedTransactionInfo> registeredTransactions = orderBook.registerOrder(sellCommand)
+        List<FinishedTransactionInfo> finishedTransactions = orderBook.registerOrder(sellCommand)
                                                                         .finishedTransactionInfoList();
         Queue<Order> orderQueue = orderBook.getAsksOrderQueue(ticker);
 
-        assertAll(() -> assertTrue(containsUuid(orderQueue, registeredTransactions)));
+        assertAll(() -> assertEquals(0, finishedTransactions.size()),
+                  () -> assertEquals(1, orderQueue.size()));
         OrderUtils.printOrders(orderBook, ticker);
 
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, null, volume);
         orderBook.registerOrder(buyCommand);
 
         assertDoesNotThrow(() -> orderBook.registerOrder(buyCommand));
@@ -275,12 +275,5 @@ class SimpleOrderBookTest {
                   () -> assertEquals(requestedVolumeHigherThanAvailable, orderRegistrationResult.orderFillDetails().volumeRequested()),
                   () -> assertEquals(totalAvailableVolume, orderRegistrationResult.orderFillDetails().volumeFilled()),
                   () -> assertEquals(missingLimitOrders, orderRegistrationResult.orderFillDetails().volumePending()));
-    }
-
-    private boolean containsUuid(Queue<Order> orderQueue, List<FinishedTransactionInfo> registeredTransactions) {
-        return orderQueue.stream()
-                         .anyMatch(order -> order.getOrderUuid()
-                                                 .equals(registeredTransactions.get(0)
-                                                                               .orderUuid()));
     }
 }

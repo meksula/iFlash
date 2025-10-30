@@ -19,10 +19,7 @@ public record OrderRegistrationResult(OrderRegistrationState orderRegistrationSt
 
     public static OrderRegistrationResult transactionPartiallyCompleted(List<FinishedTransactionInfo> finishedTransactionInfoList, RegisterOrderCommand registerOrderCommand) {
         String message = "Could not filled complete full requested volume, partially filled transaction";
-        Long volumeFilled = finishedTransactionInfoList.stream()
-                                                       .map(FinishedTransactionInfo::volume)
-                                                       .reduce(Long::sum)
-                                                       .orElse(0L);
+        Long volumeFilled = sumFilledVolume(finishedTransactionInfoList);
         Long volumePending = registerOrderCommand.volume() - volumeFilled;
         OrderFillDetails orderFillDetails = new OrderFillDetails(registerOrderCommand.volume(), volumeFilled, volumePending, message);
         return new OrderRegistrationResult(OrderRegistrationState.SUCCESS, TransactionPhase.PARTIALLY_COMPLETED, finishedTransactionInfoList, null, orderFillDetails);
@@ -33,6 +30,27 @@ public record OrderRegistrationResult(OrderRegistrationState orderRegistrationSt
         return new OrderRegistrationResult(OrderRegistrationState.SUCCESS, TransactionPhase.IDLING_ON_QUEUE, Collections.emptyList(), null, orderFillDetails);
     }
 
+    public static OrderRegistrationResult limitOrderFullyCompleted(List<FinishedTransactionInfo> finishedTransactionInfo, RegisterOrderCommand registerOrderCommand) {
+        Long volumeFilled = sumFilledVolume(finishedTransactionInfo);
+        OrderFillDetails orderFillDetails = new OrderFillDetails(registerOrderCommand.volume(), volumeFilled, 0L, "Limit order completed successfully");
+        return new OrderRegistrationResult(OrderRegistrationState.SUCCESS, TransactionPhase.FULLY_COMPLETED, finishedTransactionInfo, null, orderFillDetails);
+    }
+
+    public static OrderRegistrationResult limitOrderPartiallyCompleted(List<FinishedTransactionInfo> finishedTransactionInfo, RegisterOrderCommand registerOrderCommand) {
+        String message = "Could not filled complete full requested volume, partially filled transaction and another part of requested volume placed in queue";
+        Long volumeFilled = sumFilledVolume(finishedTransactionInfo);
+        Long volumePending = registerOrderCommand.volume() - volumeFilled;
+        OrderFillDetails orderFillDetails = new OrderFillDetails(registerOrderCommand.volume(), volumeFilled, volumePending, message);
+        return new OrderRegistrationResult(OrderRegistrationState.SUCCESS, TransactionPhase.PARTIALLY_COMPLETED, finishedTransactionInfo, null, orderFillDetails);
+    }
+
     public record OrderFillDetails(Long volumeRequested, Long volumeFilled, Long volumePending, String message) {
+    }
+
+    private static Long sumFilledVolume(List<FinishedTransactionInfo> finishedTransactionInfoList) {
+        return finishedTransactionInfoList.stream()
+                                          .map(FinishedTransactionInfo::volume)
+                                          .reduce(Long::sum)
+                                          .orElse(0L);
     }
 }
