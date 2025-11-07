@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import com.iflash.commons.Page;
 import com.iflash.commons.Pagination;
 import com.iflash.commons.ValidateUtils;
+import com.iflash.core.quotation.QuotationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +34,12 @@ class SimpleOrderBook implements OrderBook {
         throw OrderBookException.cannotCreate();
     }
 
-    SimpleOrderBook(Map<String, Queue<Order>> asksOrdersByTicker, Map<String, Queue<Order>> bidsOrdersByTicker) {
+    SimpleOrderBook(Map<String, Queue<Order>> asksOrdersByTicker, Map<String, Queue<Order>> bidsOrdersByTicker, QuotationProvider quotationProvider) {
         this.asksOrdersByTicker = asksOrdersByTicker;
         this.bidsOrdersByTicker = bidsOrdersByTicker;
 
-        this.marketOrderProcessor = new MarketOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker);
-        this.limitOrderProcessor = new LimitOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker);
+        this.limitOrderProcessor = new LimitOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker, quotationProvider);
+        this.marketOrderProcessor = new MarketOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker, this.limitOrderProcessor);
     }
 
     @Override

@@ -10,7 +10,6 @@ import com.iflash.core.order.OrderInformation;
 import com.iflash.core.order.OrderRegistrationResult;
 import com.iflash.core.order.OrderRegistrationValidator;
 import com.iflash.core.order.RegisterOrderCommand;
-import com.iflash.core.quotation.CurrentQuotation;
 import com.iflash.core.quotation.QuotationAggregator;
 import com.iflash.core.quotation.QuotationProvider;
 import lombok.extern.slf4j.Slf4j;
@@ -76,27 +75,16 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
         if (orderRegistrationPriceValid) {
             OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(registerOrderCommand);
             switch (orderRegistrationResult.transactionPhase()) {
-            case FULLY_COMPLETED -> {
-                List<FinishedTransactionInfo> finishedTransactionInfos = orderRegistrationResult.finishedTransactionInfoList();
-                CompletableFuture.runAsync(() -> quotationAggregator.calculateQuotationPostTransaction(registerOrderCommand.ticker(), finishedTransactionInfos));
-            }
-            case PARTIALLY_COMPLETED -> {
-                List<FinishedTransactionInfo> finishedTransactionInfos = orderRegistrationResult.finishedTransactionInfoList();
-                CurrentQuotation currentQuotation = quotationProvider.getCurrentQuote(registerOrderCommand.ticker());
-                RegisterOrderCommand afterPartialFillment = registerOrderCommand.createAfterPartialFillment(currentQuotation,
-                                                                                                            orderRegistrationResult.orderFillDetails()
-                                                                                                                                   .volumePending());
-                CompletableFuture.runAsync(() -> quotationAggregator.calculateQuotationPostTransaction(registerOrderCommand.ticker(), finishedTransactionInfos));
-                orderRegistrationResult = orderBook.registerOrder(afterPartialFillment);
-            }
-            case IDLING_ON_QUEUE -> {
-                Set<OrderInformation> topBids = orderBook.getTopOrders(registerOrderCommand.ticker(), BID, QUOTATION_CALCULATE_DEPTH);
-                Set<OrderInformation> topAsks = orderBook.getTopOrders(registerOrderCommand.ticker(), ASK, QUOTATION_CALCULATE_DEPTH);
-                CompletableFuture.runAsync(() -> quotationAggregator.calculateTheoreticalQuotation(registerOrderCommand.ticker(), topBids, topAsks));
-            }
-            case REJECTED -> {
-                log.warn("Order is rejected");
-            }
+                case FULLY_COMPLETED, PARTIALLY_COMPLETED -> {
+                    List<FinishedTransactionInfo> finishedTransactionInfos = orderRegistrationResult.finishedTransactionInfoList();
+                    CompletableFuture.runAsync(() -> quotationAggregator.calculateQuotationPostTransaction(registerOrderCommand.ticker(), finishedTransactionInfos));
+                }
+                case IDLING_ON_QUEUE -> {
+                    Set<OrderInformation> topBids = orderBook.getTopOrders(registerOrderCommand.ticker(), BID, QUOTATION_CALCULATE_DEPTH);
+                    Set<OrderInformation> topAsks = orderBook.getTopOrders(registerOrderCommand.ticker(), ASK, QUOTATION_CALCULATE_DEPTH);
+                    CompletableFuture.runAsync(() -> quotationAggregator.calculateTheoreticalQuotation(registerOrderCommand.ticker(), topBids, topAsks));
+                }
+                case REJECTED -> log.warn("Order is rejected");
             }
             return orderRegistrationResult;
         }

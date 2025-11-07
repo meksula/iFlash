@@ -1,5 +1,6 @@
 package com.iflash.core.order;
 
+import com.iflash.core.quotation.CurrentQuotation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,6 +15,7 @@ class MarketOrderProcessor {
 
     private final Map<String, Queue<Order>> asksOrdersByTicker;
     private final Map<String, Queue<Order>> bidsOrdersByTicker;
+    private final LimitOrderProcessor limitOrderProcessor; // <- not good solution to have this here, better to switch to even driven arch
 
     OrderRegistrationResult processMarketOrder(RegisterOrderCommand registerOrderCommand) {
         Queue<Order> ordersQueue = OrderDirection.BID == registerOrderCommand.orderDirection()
@@ -53,9 +55,14 @@ class MarketOrderProcessor {
                     return OrderRegistrationResult.limitOrderPlacedSuccessfully(registerOrderCommand);
                 }
                 log.info("Partially Fill occured, requested volume: {}, filled volume: {}", volumeRequested, volumeBoughtInSession);
-                return OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut, registerOrderCommand);
+                OrderRegistrationResult partiallyCompleted = OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut, registerOrderCommand);
+                CurrentQuotation currentQuote = new CurrentQuotation(System.currentTimeMillis(), registerOrderCommand.price());
+                RegisterOrderCommand afterPartialFill = registerOrderCommand.createAfterPartialFillment(currentQuote, partiallyCompleted.orderFillDetails()
+                                                                                                                                        .volumePending());
+                limitOrderProcessor.processLimitOrder(afterPartialFill);
+                return partiallyCompleted;
             }
         }
-        return OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut);
+        return OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut); // todo???? jak tu się nic nie zadziało to jak completed, dziwne
     }
 }

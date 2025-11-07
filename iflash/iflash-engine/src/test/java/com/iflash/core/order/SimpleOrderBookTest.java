@@ -1,15 +1,27 @@
 package com.iflash.core.order;
 
+import com.iflash.core.quotation.CurrentQuotation;
+import com.iflash.core.quotation.QuotationProvider;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Queue;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 class SimpleOrderBookTest {
+
+    private final QuotationProvider quotationProvider = Mockito.mock(QuotationProvider.class);
+
+    @BeforeEach
+    void setUp() {
+        Mockito.when(quotationProvider.getCurrentQuote(any())).thenReturn(new CurrentQuotation(System.currentTimeMillis(), BigDecimal.valueOf(171.1243)));
+    }
 
     @Test
     @DisplayName("Should correctly add sell Order if ticker is not exists, if bids queue is empty we treat MARKET sell as LIMIT and put it on queue")
@@ -17,7 +29,7 @@ class SimpleOrderBookTest {
         var ticker = "NVDA.US";
         var volume = 1L;
 
-        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
         RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, null, volume);
 
@@ -36,7 +48,7 @@ class SimpleOrderBookTest {
         var ticker = "NVDA.US";
         var volume = 1L;
 
-        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, null, volume);
 
@@ -67,7 +79,7 @@ class SimpleOrderBookTest {
         var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
-        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, notExistingTicker, price, volume);
 
         assertThrows(OrderBookException.class, () -> orderBook.registerOrder(sellCommand));
@@ -79,7 +91,7 @@ class SimpleOrderBookTest {
         var ticker = "NVDA.US";
         var volume = 1L;
 
-        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
         RegisterOrderCommand sellCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, null, volume);
 
@@ -103,7 +115,7 @@ class SimpleOrderBookTest {
         var ticker = "NVDA.US";
         var volume = 100L;
 
-        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), volume));
         registerOrderCommands.forEach(orderBook::registerOrder);
@@ -123,7 +135,7 @@ class SimpleOrderBookTest {
         var ticker = "NVDA.US";
         var tickerNotExisting = "NOEX.IS";
 
-        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
@@ -150,7 +162,7 @@ class SimpleOrderBookTest {
     void shouldCorrectlyBuyPositionsFromManySellOrders() {
         var ticker = "NVDA.US";
 
-        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
@@ -186,7 +198,7 @@ class SimpleOrderBookTest {
     void shouldCorrectlyBuyAllPositions() {
         var ticker = "NVDA.US";
 
-        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
@@ -221,7 +233,7 @@ class SimpleOrderBookTest {
         var ticker = "NVDA.US";
 
         Long missingLimitOrders = 10L;
-        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
@@ -252,7 +264,7 @@ class SimpleOrderBookTest {
         var ticker = "NVDA.US";
 
         Long missingLimitOrders = 10L;
-        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook();
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
         List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
                                                                    new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
