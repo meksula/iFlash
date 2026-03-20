@@ -101,8 +101,8 @@ class SimpleOrderBook implements OrderBook {
 
     private Map<String, Queue<Order>> select(OrderDirection orderDirection) {
         return switch (orderDirection) {
-            case ASK -> bidsOrdersByTicker;
-            case BID -> asksOrdersByTicker;
+            case BID -> bidsOrdersByTicker;
+            case ASK -> asksOrdersByTicker;
         };
     }
 

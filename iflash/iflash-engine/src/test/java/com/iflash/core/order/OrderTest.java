@@ -16,7 +16,7 @@ class OrderTest {
         var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
-        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, price, volume);
         Order order = Order.factorize(registerOrderCommand);
 
         assertAll(() -> assertEquals(OrderRegistrationState.PENDING, order.getOrderRegistrationState()),
@@ -25,13 +25,13 @@ class OrderTest {
     }
 
     @Test
-    @DisplayName("Should correctly create ASK order with correct states and with full history log in orderStateHistory")
+    @DisplayName("Should correctly create BUY order with correct states and with full history log in orderStateHistory")
     void shouldCorrectlyCreateOrderWithCorrectStatesAndWithFullHistoryLogInOrderStateHistory() {
         var ticker = "NVDA.US";
         var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
-        RegisterOrderCommand buyOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand buyOrderCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, price, volume);
         Order buyOrder = Order.factorize(buyOrderCommand);
 
         assertAll(() -> assertEquals(OrderRegistrationState.PENDING, buyOrder.getOrderRegistrationState()),
@@ -46,7 +46,7 @@ class OrderTest {
         var price = BigDecimal.valueOf(171.9434);
         var volume = 1L;
 
-        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, price, volume);
         Order order = Order.factorize(registerOrderCommand);
         order.offerSuccessfullyRegistered();
         order.bought();

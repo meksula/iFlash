@@ -21,8 +21,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static com.iflash.core.configuration.GlobalSettings.QUOTATION_CALCULATE_DEPTH;
-import static com.iflash.core.order.OrderDirection.BID;
 import static com.iflash.core.order.OrderDirection.ASK;
+import static com.iflash.core.order.OrderDirection.BID;
 
 @Slf4j
 public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperations, OrderBookOperations {
@@ -80,8 +80,8 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
                     CompletableFuture.runAsync(() -> quotationAggregator.calculateQuotationPostTransaction(registerOrderCommand.ticker(), finishedTransactionInfos));
                 }
                 case IDLING_ON_QUEUE -> {
-                    Set<OrderInformation> topBids = orderBook.getTopOrders(registerOrderCommand.ticker(), ASK, QUOTATION_CALCULATE_DEPTH);
-                    Set<OrderInformation> topAsks = orderBook.getTopOrders(registerOrderCommand.ticker(), BID, QUOTATION_CALCULATE_DEPTH);
+                    Set<OrderInformation> topBids = orderBook.getTopOrders(registerOrderCommand.ticker(), BID, QUOTATION_CALCULATE_DEPTH);
+                    Set<OrderInformation> topAsks = orderBook.getTopOrders(registerOrderCommand.ticker(), ASK, QUOTATION_CALCULATE_DEPTH);
                     CompletableFuture.runAsync(() -> quotationAggregator.calculateTheoreticalQuotation(registerOrderCommand.ticker(), topBids, topAsks));
                 }
                 case REJECTED -> log.warn("Order is rejected");

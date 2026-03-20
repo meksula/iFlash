@@ -20,7 +20,7 @@ class LimitOrderProcessor {
     private final QuotationProvider quotationProvider;
 
     OrderRegistrationResult processLimitOrder(RegisterOrderCommand registerOrderCommand) {
-        if (OrderDirection.ASK == registerOrderCommand.orderDirection()) {
+        if (OrderDirection.BID == registerOrderCommand.orderDirection()) {
             return processBidLimitOrder(registerOrderCommand);
         }
         else {

@@ -18,7 +18,7 @@ class MarketOrderProcessor {
     private final LimitOrderProcessor limitOrderProcessor; // <- not good solution to have this here, better to switch to even driven arch
 
     OrderRegistrationResult processMarketOrder(RegisterOrderCommand registerOrderCommand) {
-        Queue<Order> ordersQueue = OrderDirection.ASK == registerOrderCommand.orderDirection()
+        Queue<Order> ordersQueue = OrderDirection.BID == registerOrderCommand.orderDirection()
                                    ? asksOrdersByTicker.get(registerOrderCommand.ticker())
                                    : bidsOrdersByTicker.get(registerOrderCommand.ticker());
         if (ordersQueue == null) {
@@ -46,7 +46,7 @@ class MarketOrderProcessor {
             }
             else {
                 if (volumeBoughtInSession == 0L) {
-                    Queue<Order> orderQueue = OrderDirection.ASK == registerOrderCommand.orderDirection()
+                    Queue<Order> orderQueue = OrderDirection.BID == registerOrderCommand.orderDirection()
                                               ? bidsOrdersByTicker.get(registerOrderCommand.ticker())
                                               : asksOrdersByTicker.get(registerOrderCommand.ticker());
                     Order idlingOrder = Order.factorize(registerOrderCommand);
