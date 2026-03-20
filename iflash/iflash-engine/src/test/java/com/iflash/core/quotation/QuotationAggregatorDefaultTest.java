@@ -41,7 +41,7 @@ class QuotationAggregatorDefaultTest {
         QuotationCalculable quotationCalculable = new WeightedAverageQuotation();
         QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations, theoreticalQuotations);
 
-        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.MARKET, ticker, price, volume);
+        RegisterOrderCommand buyCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, price, volume);
         List<FinishedTransactionInfo> finishedTransactionInfos = List.of(
                 new FinishedTransactionInfo(UUID.randomUUID(), ticker, 10, BigDecimal.valueOf(171.734)),
                 new FinishedTransactionInfo(UUID.randomUUID(), ticker, 10, BigDecimal.valueOf(171.256)),

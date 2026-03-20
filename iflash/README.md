@@ -38,7 +38,7 @@ Example response body:
 <h5>Order Book view</h5>
 METHOD: `GET`    
 URI: `/api/v1/orderbook/{ticker}?page=0&size=20&orderBy=DESC&orderDirection=BID`
-> Use this endpoint to view paginated result of current order book state. Only asks positions are supported only for now.
+> Use this endpoint to view paginated result of current order book state.
 
 ### URL Parameters
 | Parameter       | Type   | Possible values | Description                                                                 |
@@ -163,11 +163,11 @@ URI: `/api/v1/trade/order`
 ### Request Body Fields
 | Field           | Type   | Possible values | Description                                                                 |
 |-----------------|--------|-----------------|-----------------------------------------------------------------------------|
-| `orderDirection`| String | `BID`, `ASK`    | Direction of the order. Possible values: `BID` (buy), `ASK` (sell).        |
-| `orderType`     | String | `MARKET`, `LIMIT` | Type of the order. Possible values: `MARKET` (immediate), `LIMIT` (delayed).|
-| `ticker`        | String | Any valid ticker | The ticker symbol of the financial instrument.                             |
-| `volume`        | Integer| Any positive integer | The number of shares to trade.                                             |
-| `price`         | Float  | Any positive number | (Optional) The price per share for LIMIT orders.                           |
+| `orderDirection`| String | `BID`, `ASK`    | Direction of the order. Possible values: `BID` (sell), `ASK` (buy).         |
+| `orderType`     | String | `MARKET`, `LIMIT` | Type of the order. Possible values: `MARKET` (immediate), `LIMIT` (delayed). |
+| `ticker`        | String | Any valid ticker | The ticker symbol of the financial instrument.                              |
+| `volume`        | Integer| Any positive integer | The number of shares to trade.                                              |
+| `price`         | Float  | Any positive number | (Optional) The price per share for LIMIT orders.                            |
 
 ### Response Body Fields
 | Field           | Type   | Possible values | Description                                                                 |

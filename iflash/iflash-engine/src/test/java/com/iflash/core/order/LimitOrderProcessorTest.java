@@ -37,7 +37,7 @@ class LimitOrderProcessorTest {
         simpleOrderBook.registerTicker(ticker);
         LimitOrderProcessor limitOrderProcessor = new LimitOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker, quotationProvider);
 
-        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L);
+        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L);
 
         OrderRegistrationResult orderRegistrationResult = limitOrderProcessor.processLimitOrder(registerOrderCommand);
 
@@ -64,7 +64,7 @@ class LimitOrderProcessorTest {
         simpleOrderBook.registerTicker(ticker);
         LimitOrderProcessor limitOrderProcessor = new LimitOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker, quotationProvider);
 
-        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L);
+        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L);
 
         OrderRegistrationResult orderRegistrationResult = limitOrderProcessor.processLimitOrder(registerOrderCommand);
 
@@ -95,11 +95,11 @@ class LimitOrderProcessorTest {
         LimitOrderProcessor limitOrderProcessor = new LimitOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker, quotationProvider);
 
         // Sell at a price higher than sellLimit
-        RegisterOrderCommand sellRegisterOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, volume);
+        RegisterOrderCommand sellRegisterOrderCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, volume);
         limitOrderProcessor.processLimitOrder(sellRegisterOrderCommand);
 
         // Buy at a price lower or equal to buy limit
-        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, buyLimit, volume);
+        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, buyLimit, volume);
         OrderRegistrationResult orderRegistrationResult = limitOrderProcessor.processLimitOrder(registerOrderCommand);
 
         assertAll(() -> assertTrue(simpleOrderBook.getAsksOrderQueue(ticker).isEmpty()),
@@ -130,15 +130,15 @@ class LimitOrderProcessorTest {
         LimitOrderProcessor limitOrderProcessor = new LimitOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker, quotationProvider);
 
         // Sell at a price higher than sellLimit
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, 2L),
-                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, 3L),
-                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, 4L),
-                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, 5L),
-                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, 7L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, 2L),
+                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, 3L),
+                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, 4L),
+                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, 7L));
         registerOrderCommands.forEach(limitOrderProcessor::processLimitOrder);
 
         // Buy at a price lower or equal to buy limit
-        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, buyLimit, volume);
+        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, buyLimit, volume);
         OrderRegistrationResult orderRegistrationResult = limitOrderProcessor.processLimitOrder(registerOrderCommand);
 
         assertAll(() -> assertFalse(simpleOrderBook.getAsksOrderQueue(ticker).isEmpty()),
@@ -170,16 +170,16 @@ class LimitOrderProcessorTest {
         LimitOrderProcessor limitOrderProcessor = new LimitOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker, quotationProvider);
 
         // Buy Limit at a price higher than sellLimit
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, buyLimit, 2L),
-                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, buyLimit, 3L),
-                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, buyLimit, 4L),
-                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, buyLimit, 5L),
-                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, buyLimit, 7L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, buyLimit, 2L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, buyLimit, 3L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, buyLimit, 4L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, buyLimit, 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, buyLimit, 7L));
         registerOrderCommands.forEach(limitOrderProcessor::processLimitOrder);
 
         // Sell at a price higher or equal to buy limit
-        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, volume/2);
-        RegisterOrderCommand nextSameRegisterOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, volume/2);
+        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, volume/2);
+        RegisterOrderCommand nextSameRegisterOrderCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, volume/2);
         OrderRegistrationResult orderRegistrationResult = limitOrderProcessor.processLimitOrder(registerOrderCommand);
         OrderRegistrationResult nextSameOrderRegistrationResult = limitOrderProcessor.processLimitOrder(nextSameRegisterOrderCommand);
 
@@ -219,11 +219,11 @@ class LimitOrderProcessorTest {
         LimitOrderProcessor limitOrderProcessor = new LimitOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker, quotationProvider);
 
         // Sell at a price higher than sellLimit
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, 2L),
-                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, 3L),
-                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, 4L),
-                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, 5L),
-                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, sellLimit, 7L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, 2L),
+                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, 3L),
+                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, 4L),
+                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, sellLimit, 7L));
         registerOrderCommands.forEach(limitOrderProcessor::processLimitOrder);
 
         long availableVolume = registerOrderCommands.stream()
@@ -233,7 +233,7 @@ class LimitOrderProcessorTest {
         long volumeRequested = availableVolume + 1; // volume higher than available
 
         // Buy at a price lower or equal to buy limit
-        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.BID, OrderType.LIMIT, ticker, buyLimit, volumeRequested);
+        RegisterOrderCommand registerOrderCommand = new RegisterOrderCommand(OrderDirection.ASK, OrderType.LIMIT, ticker, buyLimit, volumeRequested);
         OrderRegistrationResult orderRegistrationResult = limitOrderProcessor.processLimitOrder(registerOrderCommand);
 
         assertAll(() -> assertTrue(simpleOrderBook.getAsksOrderQueue(ticker).isEmpty()),
