@@ -1,5 +1,8 @@
 package com.iflash.core.order;
 
+import com.iflash.commons.OrderBy;
+import com.iflash.commons.Page;
+import com.iflash.commons.Pagination;
 import com.iflash.core.quotation.CurrentQuotation;
 import com.iflash.core.quotation.QuotationProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -287,5 +290,97 @@ class SimpleOrderBookTest {
                   () -> assertEquals(requestedVolumeHigherThanAvailable, orderRegistrationResult.orderFillDetails().volumeRequested()),
                   () -> assertEquals(totalAvailableVolume, orderRegistrationResult.orderFillDetails().volumeFilled()),
                   () -> assertEquals(missingLimitOrders, orderRegistrationResult.orderFillDetails().volumePending()));
+    }
+
+    @Test
+    @DisplayName("Should correctly paginate order book snapshot for ASC order")
+    void shouldCorrectlyPaginateOrderBookSnapshotForAscOrder() {
+        var ticker = "NVDA.US";
+
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
+        orderBook.registerTicker(ticker);
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+
+        Pagination firstPage = new Pagination(0, 2, OrderBy.ASC);
+        Pagination secondPage = new Pagination(1, 2, OrderBy.ASC);
+
+        Page<OrderInformation> firstPageSnapshot = orderBook.getOrderBookSnapshot(ticker, OrderDirection.ASK, firstPage);
+        Page<OrderInformation> secondPageSnapshot = orderBook.getOrderBookSnapshot(ticker, OrderDirection.ASK, secondPage);
+
+        assertAll(() -> assertEquals(2, firstPageSnapshot.getElements().size()),
+                  () -> assertEquals(BigDecimal.valueOf(171.1442), firstPageSnapshot.getElements().get(0).price()),
+                  () -> assertEquals(BigDecimal.valueOf(171.3248), firstPageSnapshot.getElements().get(1).price()),
+                  () -> assertEquals(2, secondPageSnapshot.getElements().size()),
+                  () -> assertEquals(BigDecimal.valueOf(171.7202), secondPageSnapshot.getElements().get(0).price()),
+                  () -> assertEquals(BigDecimal.valueOf(171.8431), secondPageSnapshot.getElements().get(1).price()));
+    }
+
+    @Test
+    @DisplayName("Should correctly paginate order book snapshot for DESC order")
+    void shouldCorrectlyPaginateOrderBookSnapshotForDescOrder() {
+        var ticker = "NVDA.US";
+
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
+        orderBook.registerTicker(ticker);
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+
+        Pagination firstPageDesc = new Pagination(0, 2, OrderBy.DESC);
+        Pagination outOfRangePageDesc = new Pagination(3, 2, OrderBy.DESC);
+
+        Page<OrderInformation> firstPageSnapshotDesc = orderBook.getOrderBookSnapshot(ticker, OrderDirection.ASK, firstPageDesc);
+        Page<OrderInformation> outOfRangeSnapshotDesc = orderBook.getOrderBookSnapshot(ticker, OrderDirection.ASK, outOfRangePageDesc);
+
+        assertAll(() -> assertEquals(2, firstPageSnapshotDesc.getElements().size()),
+                  () -> assertEquals(BigDecimal.valueOf(171.9733), firstPageSnapshotDesc.getElements().get(0).price()),
+                  () -> assertEquals(BigDecimal.valueOf(171.8431), firstPageSnapshotDesc.getElements().get(1).price()),
+                  () -> assertEquals(0, outOfRangeSnapshotDesc.getElements().size()));
+    }
+
+    @Test
+    @DisplayName("Should reject order book snapshot request if pagination values are invalid")
+    void shouldRejectOrderBookSnapshotRequestIfPaginationValuesAreInvalid() {
+        var ticker = "NVDA.US";
+
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
+        orderBook.registerTicker(ticker);
+        orderBook.registerOrder(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L));
+
+        Pagination zeroSizePagination = new Pagination(0, 0, OrderBy.ASC);
+        Pagination negativePagePagination = new Pagination(-1, 1, OrderBy.ASC);
+
+        assertAll(() -> assertThrows(IllegalStateException.class, () -> orderBook.getOrderBookSnapshot(ticker, OrderDirection.ASK, zeroSizePagination)),
+                  () -> assertThrows(IllegalStateException.class, () -> orderBook.getOrderBookSnapshot(ticker, OrderDirection.ASK, negativePagePagination)));
+    }
+
+    @Test
+    @DisplayName("Should correctly apply pagination offset for order book snapshot")
+    void shouldCorrectlyApplyPaginationOffsetForOrderBookSnapshot() {
+        var ticker = "NVDA.US";
+
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
+        orderBook.registerTicker(ticker);
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+
+        Pagination paginationWithOffset = new Pagination(1, 2, OrderBy.ASC);
+        Page<OrderInformation> snapshotWithOffset = orderBook.getOrderBookSnapshot(ticker, OrderDirection.ASK, paginationWithOffset);
+
+        assertAll(() -> assertEquals(2, snapshotWithOffset.getElements().size()),
+                  () -> assertEquals(BigDecimal.valueOf(171.7202), snapshotWithOffset.getElements().get(0).price()),
+                  () -> assertEquals(BigDecimal.valueOf(171.8431), snapshotWithOffset.getElements().get(1).price()));
     }
 }

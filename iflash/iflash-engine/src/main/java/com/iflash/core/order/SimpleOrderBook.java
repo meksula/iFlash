@@ -62,44 +62,41 @@ class SimpleOrderBook implements OrderBook {
         log.info("Company with ticker: {} registered", ticker);
     }
 
-    // todo pagination not supported
     @Override
     public Page<OrderInformation> getOrderBookSnapshot(String ticker, OrderDirection orderDirection, Pagination pagination) {
         Queue<Order> orders = select(orderDirection).get(ticker);
         if (orders == null) {
             throw OrderBookException.noTicker(ticker);
         }
+        if (pagination.size() <= 0) {
+            throw new IllegalStateException("Cannot get order book snapshot for size value less or equal to 0");
+        }
+        if (pagination.page() < 0) {
+            throw new IllegalStateException("Cannot get order book snapshot for page value less than 0");
+        }
         if (orders.isEmpty()) {
             return Page.of(List.of(), pagination);
         }
         List<Order> orderList = new ArrayList<>(orders);
+        Collections.sort(orderList);
 
-        int orderListSize = orderList.size();
-        int limit = pagination.size();
-        return switch (pagination.orderBy()) {
+        switch (pagination.orderBy()) {
             case ASC -> {
-                if (pagination.size() <= 0) {
-                    throw new IllegalStateException("Cannot find Quotations for limit value less or equal to 0");
-                }
-                if (pagination.size() > orderListSize) {
-                    limit = orderListSize;
-                }
-                List<OrderInformation> orderInformationList = orderList.subList(0, limit)
-                                                                       .stream()
-                                                                       .map(Order::orderInformation)
-                                                                       .toList();
-                yield Page.of(orderInformationList, pagination);
             }
-            case DESC -> {
-                int fromIndex = orderList.size() - limit;
-                List<OrderInformation> orderInformationList = orderList.subList(Math.max(fromIndex, 0), orderList.size())
-                                                                       .stream()
-                                                                       .map(Order::orderInformation)
-                                                                       .collect(Collectors.toList());
-                Collections.reverse(orderInformationList);
-                yield Page.of(orderInformationList, pagination);
-            }
-        };
+            case DESC -> Collections.reverse(orderList);
+        }
+
+        int fromIndex = pagination.page() * pagination.size();
+        if (fromIndex >= orderList.size()) {
+            return Page.of(List.of(), pagination);
+        }
+
+        int toIndex = Math.min(fromIndex + pagination.size(), orderList.size());
+        List<OrderInformation> orderInformationList = orderList.subList(fromIndex, toIndex)
+                                                               .stream()
+                                                               .map(Order::orderInformation)
+                                                               .collect(Collectors.toList());
+        return Page.of(orderInformationList, pagination);
     }
 
     private Map<String, Queue<Order>> select(OrderDirection orderDirection) {

@@ -7,9 +7,15 @@ iflash is a fast, efficient, real-time response app for stock market simulation.
 <h2>iflash API description</h2>
 
 <h5>Get all financial instrument list</h5>
-  METHOD: `GET`  
-  URI: `/api/v1/instrument`
-  > Use this endpoint to retrieve the list of available financial instruments on the iFlash exchange.
+METHOD: `GET`    
+URI: `/api/v1/instrument`
+> Use this endpoint to retrieve the list of available financial instruments on the iFlash exchange.
+
+### Response Body Fields
+| Field           | Type   | Possible values | Description                                                                 |
+|-----------------|--------|-----------------|-----------------------------------------------------------------------------|
+| `ticker`        | String | Any valid ticker | The ticker symbol of the financial instrument.                             |
+| `currentPrice`  | Float  | Any positive number | The current price of the financial instrument.                             |
 
 Example response body:
 ```
@@ -29,13 +35,26 @@ Example response body:
 ]    
 ```
 
-<br>
-<br>
-
 <h5>Order Book view</h5>
 METHOD: `GET`    
-URI: `/api/v1/orderbook/NVDA?page=0&size=20&orderBy=DESC`
+URI: `/api/v1/orderbook/{ticker}?page=0&size=20&orderBy=DESC&orderDirection=BID`
 > Use this endpoint to view paginated result of current order book state. Only asks positions are supported only for now.
+
+### URL Parameters
+| Parameter       | Type   | Possible values | Description                                                                 |
+|-----------------|--------|-----------------|-----------------------------------------------------------------------------|
+| `ticker`        | String | Any valid ticker | The ticker symbol of the financial instrument.                             |
+| `page`          | Integer| Any non-negative integer | The page number for pagination.                                             |
+| `size`          | Integer| Any positive integer | The number of results per page.                                             |
+| `orderBy`       | String | `ASC`, `DESC`   | The order of sorting.                                                       |
+| `orderDirection`| String | `BID`, `ASK`    | The direction of the order.                                                 |
+
+### Response Body Fields
+| Field           | Type   | Possible values | Description                                                                 |
+|-----------------|--------|-----------------|-----------------------------------------------------------------------------|
+| `responseZonedDateTime`| String | ISO 8601 datetime | The timestamp of the response.                                              |
+| `ticker`        | String | Any valid ticker | The ticker symbol of the financial instrument.                             |
+| `asks`          | Object | N/A             | Contains the list of ask orders and pagination details.                     |
 
 Example response body:
 ```
@@ -64,13 +83,23 @@ Example response body:
 }
 ```
 
-<br>
-<br>
-
 <h5>Current quotation</h5>
 METHOD: `GET`    
-URI: `/api/v1/quotation/NVDA/price`
-> Use this endpoint to fetch current quotation for any supported ticker
+URI: `/api/v1/quotation/{ticker}/price`
+> Use this endpoint to fetch current quotation for any supported ticker.
+
+### URL Parameters
+| Parameter       | Type   | Possible values | Description                                                                 |
+|-----------------|--------|-----------------|-----------------------------------------------------------------------------|
+| `ticker`        | String | Any valid ticker | The ticker symbol of the financial instrument.                             |
+
+### Response Body Fields
+| Field           | Type   | Possible values | Description                                                                 |
+|-----------------|--------|-----------------|-----------------------------------------------------------------------------|
+| `responseZonedDateTime`| String | ISO 8601 datetime | The timestamp of the response.                                              |
+| `quoteTimestamp`| Long   | Any positive number | The timestamp of the quote.                                                 |
+| `ticker`        | String | Any valid ticker | The ticker symbol of the financial instrument.                             |
+| `price`         | Float  | Any positive number | The current price of the financial instrument.                              |
 
 Example response body:
 ```
@@ -82,13 +111,24 @@ Example response body:
 }
 ```
 
-<br>
-<br>
-
 <h5>Quotation history</h5>
 METHOD: `GET`    
-URI: `/api/v1/quotation/NVDA/100/DESC`
-> Use this endpoint to fetch historical quotations for any supported ticker. 100 is amount of quotations (to move to proper pagination)
+URI: `/api/v1/quotation/{ticker}/{amount}/{order}`
+> Use this endpoint to fetch historical quotations for any supported ticker.
+
+### URL Parameters
+| Parameter       | Type   | Possible values | Description                                                                 |
+|-----------------|--------|-----------------|-----------------------------------------------------------------------------|
+| `ticker`        | String | Any valid ticker | The ticker symbol of the financial instrument.                             |
+| `amount`        | Integer| Any positive integer | The number of historical quotations to fetch.                               |
+| `order`         | String | `ASC`, `DESC`   | The order of sorting.                                                       |
+
+### Response Body Fields
+| Field           | Type   | Possible values | Description                                                                 |
+|-----------------|--------|-----------------|-----------------------------------------------------------------------------|
+| `responseZonedDateTime`| String | ISO 8601 datetime | The timestamp of the response.                                              |
+| `ticker`        | String | Any valid ticker | The ticker symbol of the financial instrument.                             |
+| `quotations`    | Array  | N/A             | List of historical quotations.                                              |
 
 Example response body:
 ```
@@ -118,12 +158,34 @@ Example response body:
 <h5>Make order</h5>
 METHOD: `POST`    
 URI: `/api/v1/trade/order`
-> Use this endpoint to make order BUY or SELL type
+> Use this endpoint to make order BID or ASK type
+
+### Request Body Fields
+| Field           | Type   | Possible values | Description                                                                 |
+|-----------------|--------|-----------------|-----------------------------------------------------------------------------|
+| `orderDirection`| String | `BID`, `ASK`    | Direction of the order. Possible values: `BID` (buy), `ASK` (sell).        |
+| `orderType`     | String | `MARKET`, `LIMIT` | Type of the order. Possible values: `MARKET` (immediate), `LIMIT` (delayed).|
+| `ticker`        | String | Any valid ticker | The ticker symbol of the financial instrument.                             |
+| `volume`        | Integer| Any positive integer | The number of shares to trade.                                             |
+| `price`         | Float  | Any positive number | (Optional) The price per share for LIMIT orders.                           |
+
+### Response Body Fields
+| Field           | Type   | Possible values | Description                                                                 |
+|-----------------|--------|-----------------|-----------------------------------------------------------------------------|
+| `orderDirection`| String | `BID`, `ASK`    | Direction of the order. Reflects the request value.                        |
+| `orderType`     | String | `MARKET`, `LIMIT` | Type of the order. Reflects the request value.                              |
+| `ticker`        | String | Any valid ticker | The ticker symbol of the financial instrument.                             |
+| `price`         | Float  | Any positive number | The price per share for the transaction.                                   |
+| `volume`        | Integer| Any positive integer | The number of shares traded.                                               |
+| `transactions`  | Array  | N/A             | List of transactions executed for the order.                               |
+
+### URL Parameters
+- None
 
 Buy order request body example:
 ```
 {
-  "orderDirection": "BUY",
+  "orderDirection": "ASK",
   "orderType": "MARKET",
   "ticker": "NVDA",
   "volume": 7
@@ -132,7 +194,7 @@ Buy order request body example:
 Buy order response body:
 ```
 {
-    "orderDirection": "BUY",
+    "orderDirection": "ASK",
     "orderType": "MARKET",
     "ticker": "NVDA",
     "price": null,
@@ -153,7 +215,7 @@ Buy order response body:
 Sell order request body example:
 ```
 {
-  "orderDirection": "SELL",
+  "orderDirection": "BID",
   "orderType": "MARKET",
   "ticker": "NVDA",
   "price": "185.10",
@@ -164,7 +226,7 @@ Sell order request body example:
 Sell order response body:
 ```
 {
-    "orderDirection": "SELL",
+    "orderDirection": "BID",
     "orderType": "MARKET",
     "ticker": "NVDA",
     "price": 185.10,
