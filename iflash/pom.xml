@@ -13,6 +13,7 @@
         <module>iflash-engine</module>
         <module>iflash-platform</module>
         <module>iflash-integration-tests</module>
+        <module>trading-simulator</module>
     </modules>
 
     <dependencyManagement>
