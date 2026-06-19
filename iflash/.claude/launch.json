@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "europe-conquer",
+      "runtimeExecutable": "mvn",
+      "runtimeArgs": ["-q", "-DskipTests", "-f", "/Users/karolmeksula/Development/europe-conquer/pom.xml", "spring-boot:run"],
+      "port": 8080
+    }
+  ]
+}
