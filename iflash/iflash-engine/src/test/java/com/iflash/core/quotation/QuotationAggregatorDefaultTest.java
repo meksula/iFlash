@@ -1,6 +1,8 @@
 package com.iflash.core.quotation;
 
 import com.iflash.commons.OrderBy;
+import com.iflash.commons.Page;
+import com.iflash.commons.Pagination;
 import com.iflash.core.order.OrderDirection;
 import com.iflash.core.order.OrderType;
 import com.iflash.core.order.RegisterOrderCommand;
@@ -69,8 +71,8 @@ class QuotationAggregatorDefaultTest {
         QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations, new HashMap<>());
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
 
-        assertAll(() -> assertDoesNotThrow(() -> quotationProvider.getLastQuotes(ticker, 10, OrderBy.ASC)),
-                  () -> assertEquals(0, quotationProvider.getLastQuotes(ticker, 10, OrderBy.ASC).size()));
+        assertAll(() -> assertDoesNotThrow(() -> quotationProvider.getLastQuotes(ticker, new Pagination(0, 10, OrderBy.ASC))),
+                  () -> assertEquals(0, quotationProvider.getLastQuotes(ticker, new Pagination(0, 10, OrderBy.ASC)).getElements().size()));
     }
 
     @Test
@@ -83,11 +85,11 @@ class QuotationAggregatorDefaultTest {
         QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations, new HashMap<>());
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
 
-        List<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.ASC);
-        List<CurrentQuotation> lastQuotesDesc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.DESC);
+        Page<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, new Pagination(0, 2, OrderBy.ASC));
+        Page<CurrentQuotation> lastQuotesDesc = quotationProvider.getLastQuotes(ticker, new Pagination(0, 2, OrderBy.DESC));
 
-        assertAll(() -> assertEquals(1, lastQuotesAsc.size()),
-                  () -> assertEquals(1, lastQuotesDesc.size()));
+        assertAll(() -> assertEquals(1, lastQuotesAsc.getElements().size()),
+                  () -> assertEquals(1, lastQuotesDesc.getElements().size()));
     }
 
     @Test
@@ -103,11 +105,11 @@ class QuotationAggregatorDefaultTest {
         QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations, new HashMap<>());
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
 
-        List<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.ASC);
+        Page<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, new Pagination(0, 2, OrderBy.ASC));
 
-        assertAll(() -> assertEquals(lastQuotesAsc.get(0).price(), quotations.get(ticker).get(0).quotation()),
-                  () -> assertEquals(lastQuotesAsc.get(1).price(), quotations.get(ticker).get(1).quotation()),
-                  () -> assertEquals(2, lastQuotesAsc.size()));
+        assertAll(() -> assertEquals(lastQuotesAsc.getElements().get(0).price(), quotations.get(ticker).get(0).quotation()),
+                  () -> assertEquals(lastQuotesAsc.getElements().get(1).price(), quotations.get(ticker).get(1).quotation()),
+                  () -> assertEquals(2, lastQuotesAsc.getElements().size()));
     }
 
     @Test
@@ -123,10 +125,10 @@ class QuotationAggregatorDefaultTest {
         QuotationAggregator quotationAggregator = new QuotationAggregatorDefault(quotationCalculable, quotations, new HashMap<>());
         QuotationProvider quotationProvider = (QuotationProvider) quotationAggregator;
 
-        List<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, 2, OrderBy.DESC);
+        Page<CurrentQuotation> lastQuotesAsc = quotationProvider.getLastQuotes(ticker, new Pagination(0, 2, OrderBy.DESC));
 
-        assertAll(() -> assertEquals(lastQuotesAsc.get(0).price(), quotations.get(ticker).get(2).quotation()),
-                  () -> assertEquals(lastQuotesAsc.get(1).price(), quotations.get(ticker).get(1).quotation()),
-                  () -> assertEquals(2, lastQuotesAsc.size()));
+        assertAll(() -> assertEquals(lastQuotesAsc.getElements().get(0).price(), quotations.get(ticker).get(2).quotation()),
+                  () -> assertEquals(lastQuotesAsc.getElements().get(1).price(), quotations.get(ticker).get(1).quotation()),
+                  () -> assertEquals(2, lastQuotesAsc.getElements().size()));
     }
 }

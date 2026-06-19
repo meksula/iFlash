@@ -1,6 +1,7 @@
 package com.iflash.core.quotation;
 
-import com.iflash.commons.OrderBy;
+import com.iflash.commons.Page;
+import com.iflash.commons.Pagination;
 import com.iflash.core.engine.FinancialInstrumentInfo;
 import com.iflash.core.order.OrderBookException;
 import com.iflash.core.order.OrderInformation;
@@ -95,35 +96,36 @@ public class QuotationAggregatorDefault implements QuotationAggregator, Quotatio
     }
 
     @Override
-    public List<CurrentQuotation> getLastQuotes(String ticker, int limit, OrderBy orderBy) {
+    public Page<CurrentQuotation> getLastQuotes(String ticker, Pagination pagination) {
+        if (pagination.size() <= 0) {
+            throw new IllegalStateException("Cannot get last quotes for size value less or equal to 0");
+        }
+        if (pagination.page() < 0) {
+            throw new IllegalStateException("Cannot get last quotes for page value less than 0");
+        }
         List<Quotation> quotationList = lastPriceQuotation.get(ticker);
         if (quotationList == null || quotationList.isEmpty()) {
-            return Collections.emptyList();
+            return Page.of(List.of(), pagination);
         }
-        int size = quotationList.size();
-        return switch (orderBy) {
+        List<Quotation> orderedQuotations = new ArrayList<>(quotationList);
+
+        switch (pagination.orderBy()) {
             case ASC -> {
-                if (limit <= 0) {
-                    throw new IllegalStateException("Cannot find Quotations for limit value less or equal to 0");
-                }
-                if (limit > size) {
-                    limit = size;
-                }
-                yield quotationList.subList(0, limit)
-                                   .stream()
-                                   .map(Quotation::map)
-                                   .collect(Collectors.toList());
             }
-            case DESC -> {
-                int fromIndex = quotationList.size() - limit;
-                List<CurrentQuotation> currentQuotations = quotationList.subList(Math.max(fromIndex, 0), quotationList.size())
-                                                                        .stream()
-                                                                        .map(Quotation::map)
-                                                                        .collect(Collectors.toList());
-                Collections.reverse(currentQuotations);
-                yield currentQuotations;
-            }
-        };
+            case DESC -> Collections.reverse(orderedQuotations);
+        }
+
+        int fromIndex = pagination.page() * pagination.size();
+        if (fromIndex >= orderedQuotations.size()) {
+            return Page.of(List.of(), pagination);
+        }
+
+        int toIndex = Math.min(fromIndex + pagination.size(), orderedQuotations.size());
+        List<CurrentQuotation> currentQuotations = orderedQuotations.subList(fromIndex, toIndex)
+                                                                    .stream()
+                                                                    .map(Quotation::map)
+                                                                    .collect(Collectors.toList());
+        return Page.of(currentQuotations, pagination);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.iflash.core.order;
 
-import com.iflash.commons.OrderBy;
+import com.iflash.commons.Page;
+import com.iflash.commons.Pagination;
 import com.iflash.core.engine.FinancialInstrumentInfo;
 import com.iflash.core.quotation.CurrentQuotation;
 import com.iflash.core.quotation.QuotationProvider;
@@ -69,7 +70,7 @@ class OrderRegistrationValidatorTest {
             }
 
             @Override
-            public List<CurrentQuotation> getLastQuotes(String ticker, int limit, OrderBy orderBy) {
+            public Page<CurrentQuotation> getLastQuotes(String ticker, Pagination pagination) {
                 return null;
             }
 
