@@ -13,6 +13,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Locale;
 
 public class ApiToolkit {
 
@@ -54,7 +55,7 @@ public class ApiToolkit {
     }
 
     public ApiResponse<TransactionResponse> placeLimitOrder(String orderDirection, String ticker, int volume, double price) {
-        String body = String.format("""
+        String body = String.format(Locale.US, """
                 {
                   "orderDirection": "%s",
                   "orderType": "LIMIT",
