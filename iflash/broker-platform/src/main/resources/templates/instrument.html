@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head(${ticker})}"></head>
+<body>
+<nav th:replace="~{fragments :: header}"></nav>
+
+<main class="container">
+    <div th:replace="~{fragments :: flash}"></div>
+
+    <section class="instrument-head">
+        <div>
+            <h1 class="mono" th:text="${ticker}">AAA</h1>
+            <span class="live-price mono" id="live-price"
+                  th:text="${price != null} ? '$' + ${#numbers.formatDecimal(price, 1, 'COMMA', 4, 'POINT')} : '—'">—</span>
+        </div>
+        <div class="instrument-head-actions">
+            <span class="pill">You hold <b th:text="${position}">0</b></span>
+            <form th:if="${favorite}" method="post" th:action="@{'/favorites/' + ${ticker} + '/remove'}" class="inline">
+                <input type="hidden" name="from" th:value="@{'/instruments/' + ${ticker}}"/>
+                <button type="submit" class="star star-on" title="Remove from favorites">★</button>
+            </form>
+            <form th:unless="${favorite}" method="post" th:action="@{'/favorites/' + ${ticker}}" class="inline">
+                <input type="hidden" name="from" th:value="@{'/instruments/' + ${ticker}}"/>
+                <button type="submit" class="star" title="Add to favorites">☆</button>
+            </form>
+        </div>
+    </section>
+
+    <div class="instrument-grid">
+        <div class="stack">
+            <section class="card">
+                <div class="card-head"><h2>Price</h2><span class="muted small">polling · 4s</span></div>
+                <div id="chart" class="chart"></div>
+                <p class="empty small" id="chart-empty" hidden>No price history yet for this instrument.</p>
+            </section>
+
+            <section class="card">
+                <div class="card-head"><h2>Order book</h2></div>
+                <div class="book">
+                    <div class="book-side">
+                        <div class="book-title bid">Bids (buyers)</div>
+                        <table class="table compact"><tbody id="book-bids"></tbody></table>
+                    </div>
+                    <div class="book-side">
+                        <div class="book-title ask">Asks (sellers)</div>
+                        <table class="table compact"><tbody id="book-asks"></tbody></table>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <aside class="card order-panel">
+            <div class="card-head"><h2>Place order</h2></div>
+            <form th:action="@{/orders}" method="post" class="order-form" id="order-form">
+                <input type="hidden" name="ticker" th:value="${ticker}"/>
+
+                <label>Side</label>
+                <div class="seg" id="side-seg">
+                    <label th:each="dir : ${directions}" class="seg-option">
+                        <input type="radio" name="direction" th:value="${dir.code}"
+                               th:checked="${dir.code == 'BID'}"/>
+                        <span th:text="${dir.label}">Buy</span>
+                    </label>
+                </div>
+
+                <label for="orderType">Order type</label>
+                <select id="orderType" name="orderType" class="input">
+                    <option th:each="type : ${orderTypes}" th:value="${type}" th:text="${type}">MARKET</option>
+                </select>
+
+                <div id="price-row">
+                    <label for="price">Limit price</label>
+                    <input type="number" id="price" name="price" class="input" step="0.0001" min="0"/>
+                </div>
+
+                <label for="volume">Volume</label>
+                <input type="number" id="volume" name="volume" class="input" step="1" min="1" value="1" required/>
+
+                <button type="submit" class="btn btn-primary btn-block">Submit order</button>
+                <p class="muted small">MARKET fills now at best price. Other types send price + volume to the engine.</p>
+            </form>
+        </aside>
+    </div>
+</main>
+
+<script th:inline="javascript">window.TICKER = /*[[${ticker}]]*/ 'AAA';</script>
+<script th:src="@{/js/lightweight-charts.standalone.js}"></script>
+<script th:src="@{/js/instrument-page.js}"></script>
+</body>
+</html>

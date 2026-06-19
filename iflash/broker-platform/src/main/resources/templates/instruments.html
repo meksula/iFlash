@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Instruments')}"></head>
+<body>
+<nav th:replace="~{fragments :: header}"></nav>
+
+<main class="container">
+    <div th:replace="~{fragments :: flash}"></div>
+
+    <section class="card">
+        <div class="card-head">
+            <h2>Instruments</h2>
+            <input type="search" id="filter" class="input" placeholder="Filter ticker…"/>
+        </div>
+
+        <table class="table" id="instrument-table">
+            <thead>
+            <tr><th>Ticker</th><th class="num">Price</th><th class="num">Favorite</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="ins : ${instruments}" th:attr="data-ticker=${ins.ticker}">
+                <td class="mono" th:text="${ins.ticker}">AAA</td>
+                <td class="num mono" th:attr="data-price-ticker=${ins.ticker}"
+                    th:text="${ins.currentPrice != null} ? '$' + ${#numbers.formatDecimal(ins.currentPrice, 1, 'COMMA', 4, 'POINT')} : '—'">—</td>
+                <td class="num">
+                    <form th:if="${favorites.contains(ins.ticker)}" method="post"
+                          th:action="@{'/favorites/' + ${ins.ticker} + '/remove'}" class="inline">
+                        <input type="hidden" name="from" value="/instruments"/>
+                        <button type="submit" class="star star-on" title="Remove from favorites">★</button>
+                    </form>
+                    <form th:unless="${favorites.contains(ins.ticker)}" method="post"
+                          th:action="@{'/favorites/' + ${ins.ticker}}" class="inline">
+                        <input type="hidden" name="from" value="/instruments"/>
+                        <button type="submit" class="star" title="Add to favorites">☆</button>
+                    </form>
+                </td>
+                <td class="num">
+                    <a th:href="@{'/instruments/' + ${ins.ticker}}" class="btn btn-small">Trade</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <p class="empty" th:if="${#lists.isEmpty(instruments)}">No instruments available.</p>
+    </section>
+</main>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

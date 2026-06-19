@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Wallet')}"></head>
+<body>
+<nav th:replace="~{fragments :: header}"></nav>
+
+<main class="container">
+    <div th:replace="~{fragments :: flash}"></div>
+
+    <div class="wallet-grid">
+        <section class="card">
+            <div class="card-head"><h2>Add funds</h2></div>
+            <div class="balance-card flat">
+                <span class="label">Current balance</span>
+                <span class="value" th:text="'$' + ${#numbers.formatDecimal(balance, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+            </div>
+            <form th:action="@{/wallet/topup}" method="post" class="topup-form">
+                <label for="amount">Amount</label>
+                <input type="number" id="amount" name="amount" class="input" step="0.01" min="0.01"
+                       placeholder="100.00" required/>
+                <div class="quick-amounts">
+                    <button type="button" class="btn btn-ghost btn-small quick" data-amount="100">+100</button>
+                    <button type="button" class="btn btn-ghost btn-small quick" data-amount="1000">+1,000</button>
+                    <button type="button" class="btn btn-ghost btn-small quick" data-amount="10000">+10,000</button>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Deposit (simulated)</button>
+                <p class="muted small">Fake payment gateway — no real money is involved.</p>
+            </form>
+        </section>
+
+        <section class="card">
+            <div class="card-head"><h2>Payment history</h2></div>
+            <p class="empty" th:if="${#lists.isEmpty(payments)}">No deposits yet.</p>
+            <table class="table" th:unless="${#lists.isEmpty(payments)}">
+                <thead>
+                <tr><th>Time</th><th class="num">Amount</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${payments}">
+                    <td class="muted small" th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm:ss', 'Europe/Warsaw')}">—</td>
+                    <td class="num mono" th:text="'+$' + ${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}">$0</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</main>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

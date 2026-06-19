@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="'Marlin · ' + ${title}">Marlin</title>
+    <link rel="stylesheet" th:href="@{/css/marlin.css}"/>
+</head>
+<body>
+
+<nav th:fragment="header" class="topbar">
+    <a class="brand" th:href="@{/}">
+        <span class="brand-mark">▴</span> Marlin
+    </a>
+    <div class="nav-links">
+        <a th:href="@{/}">Dashboard</a>
+        <a th:href="@{/instruments}">Instruments</a>
+        <a th:href="@{/portfolio}">Portfolio</a>
+        <a th:href="@{/wallet}">Wallet</a>
+    </div>
+    <div class="nav-account">
+        <span class="balance" th:if="${balance != null}"
+              th:text="'$' + ${#numbers.formatDecimal(balance, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+        <span class="email" th:text="${currentEmail}">user</span>
+        <form th:action="@{/logout}" method="post" class="inline">
+            <button type="submit" class="btn btn-ghost">Logout</button>
+        </form>
+    </div>
+</nav>
+
+<div th:fragment="flash">
+    <div class="flash flash-ok" th:if="${message}" th:text="${message}"></div>
+    <div class="flash flash-err" th:if="${error}" th:text="${error}"></div>
+    <div class="flash flash-warn" th:if="${engineError}">
+        Could not reach the trading engine (iflash-platform on port 10023). Start it to see live data.
+    </div>
+</div>
+
+</body>
+</html>

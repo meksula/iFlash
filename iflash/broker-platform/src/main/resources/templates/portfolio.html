@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Portfolio')}"></head>
+<body>
+<nav th:replace="~{fragments :: header}"></nav>
+
+<main class="container">
+    <div th:replace="~{fragments :: flash}"></div>
+
+    <section class="stat-row">
+        <div class="stat">
+            <span class="label">Cash</span>
+            <span class="value" th:text="'$' + ${#numbers.formatDecimal(balance, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+        </div>
+        <div class="stat">
+            <span class="label">Holdings value</span>
+            <span class="value" th:text="'$' + ${#numbers.formatDecimal(totalValue, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+        </div>
+        <div class="stat accent">
+            <span class="label">Total equity</span>
+            <span class="value" th:text="'$' + ${#numbers.formatDecimal(balance.add(totalValue), 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-head"><h2>Holdings</h2></div>
+        <p class="empty" th:if="${#lists.isEmpty(holdings)}">You don't own any instruments yet.</p>
+        <table class="table" th:unless="${#lists.isEmpty(holdings)}">
+            <thead>
+            <tr><th>Ticker</th><th class="num">Quantity</th><th class="num">Price</th><th class="num">Market value</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="h : ${holdings}">
+                <td class="mono" th:text="${h.ticker}">AAA</td>
+                <td class="num mono" th:text="${h.quantity}">0</td>
+                <td class="num mono" th:text="'$' + ${#numbers.formatDecimal(h.currentPrice, 1, 'COMMA', 4, 'POINT')}">$0</td>
+                <td class="num mono" th:text="'$' + ${#numbers.formatDecimal(h.marketValue, 1, 'COMMA', 2, 'POINT')}">$0</td>
+                <td class="num"><a th:href="@{'/instruments/' + ${h.ticker}}" class="btn btn-small">Trade</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="card">
+        <div class="card-head"><h2>Trade history</h2></div>
+        <p class="empty" th:if="${#lists.isEmpty(trades)}">No trades yet.</p>
+        <table class="table" th:unless="${#lists.isEmpty(trades)}">
+            <thead>
+            <tr><th>Time</th><th>Ticker</th><th>Side</th><th>Type</th><th class="num">Filled</th><th class="num">Cash</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="t : ${trades}">
+                <td class="muted small" th:text="${#temporals.format(t.createdAt, 'yyyy-MM-dd HH:mm:ss', 'Europe/Warsaw')}">—</td>
+                <td class="mono" th:text="${t.ticker}">AAA</td>
+                <td><span th:class="${t.direction == 'BID'} ? 'tag tag-buy' : 'tag tag-sell'"
+                          th:text="${t.direction == 'BID'} ? 'BUY' : 'SELL'">BUY</span></td>
+                <td class="mono small" th:text="${t.orderType}">MARKET</td>
+                <td class="num mono" th:text="${t.filledQuantity}">0</td>
+                <td class="num mono" th:text="'$' + ${#numbers.formatDecimal(t.cashAmount, 1, 'COMMA', 2, 'POINT')}">$0</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

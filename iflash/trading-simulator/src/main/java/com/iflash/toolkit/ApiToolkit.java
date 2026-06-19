@@ -38,7 +38,7 @@ public class ApiToolkit {
     }
 
     public ApiResponse<QuotationHistoryResponse> getQuotationHistory(String ticker, int amount, String order) {
-        String uri = String.format("/api/v1/quotation/%s/%d/%s", ticker, amount, order);
+        String uri = String.format("/api/v1/quotation/%s/quotes?page=0&size=%d&orderBy=%s", ticker, amount, order);
         return get(uri, new TypeReference<>() {});
     }
 

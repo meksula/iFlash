@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: marlin-broker-platform
+  datasource:
+    url: ${MARLIN_DB_URL:jdbc:postgresql://localhost:5432/marlin}
+    username: ${MARLIN_DB_USER:postgres}
+    password: ${MARLIN_DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8090
+
+# Base URL of the iFlash matching-engine platform (iflash-platform module).
+iflash:
+  api:
+    base-url: ${IFLASH_API_BASE_URL:http://localhost:10023}

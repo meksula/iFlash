@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Sign in')}"></head>
+<body class="login-body">
+
+<main class="login-card">
+    <div class="login-brand">
+        <span class="brand-mark">▴</span> Marlin
+    </div>
+    <p class="login-tagline">Trade the iFlash markets — sign in or create your account instantly.</p>
+
+    <div class="flash flash-err" th:if="${error}" th:text="${error}"></div>
+
+    <form th:action="@{/login}" method="post" class="login-form">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required autofocus/>
+        <button type="submit" class="btn btn-primary btn-block">Continue</button>
+    </form>
+    <p class="login-note">No password needed. First time? Your account is created with a $0.00 balance.</p>
+</main>
+
+</body>
+</html>
