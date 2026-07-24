@@ -26,3 +26,13 @@ build/
 ### VS Code ###
 .vscode/
 .claude/
+
+### Angular / Node (broker-platform-ui) ###
+**/node_modules/
+**/dist/
+**/.angular/
+**/npm-debug.log*
+**/yarn-error.log*
+**/.env
+**/.env.*
+!**/.env.example
