@@ -4,9 +4,7 @@
 <body class="login-body">
 
 <main class="login-card">
-    <div class="login-brand">
-        <span class="brand-mark">▴</span> Marlin
-    </div>
+    <img class="login-logo" th:src="@{/img/ibp-logo.png}" alt="iFlash Broker Platform (iBP)"/>
     <p class="login-tagline">Trade the iFlash markets — sign in or create your account instantly.</p>
 
     <div class="flash flash-err" th:if="${error}" th:text="${error}"></div>

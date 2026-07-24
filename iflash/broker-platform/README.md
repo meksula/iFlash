@@ -1,4 +1,4 @@
-# Marlin — broker platform
+# iFlash Broker Platform (iBP)
 
 A broker simulator (PoC, fake money) on top of the iFlash matching engine. It adds everything the
 engine has no concept of: users, account balance, a simulated payment gateway, favorites, positions
@@ -14,7 +14,7 @@ Spring Boot 4.1 · Java 21 · Thymeleaf · Spring Data JPA · PostgreSQL · Trad
 1. **JDK 21**.
 2. **PostgreSQL** running locally. Create an empty database:
    ```sql
-   CREATE DATABASE marlin;
+   CREATE DATABASE iflash_broker_platform;
    ```
 3. **The iFlash engine** (`iflash-platform`) running on port **10023** — that is the market data /
    trading API this app consumes. For trades to actually fill you also need liquidity in the book,
@@ -25,9 +25,9 @@ Defaults live in `src/main/resources/application.yaml`; override via env vars:
 
 | Setting | Env var | Default |
 |---|---|---|
-| DB URL | `MARLIN_DB_URL` | `jdbc:postgresql://localhost:5432/marlin` |
-| DB user | `MARLIN_DB_USER` | `postgres` |
-| DB password | `MARLIN_DB_PASSWORD` | `postgres` |
+| DB URL | `IBP_DB_URL` | `jdbc:postgresql://localhost:5432/iflash_broker_platform` |
+| DB user | `IBP_DB_USER` | `postgres` |
+| DB password | `IBP_DB_PASSWORD` | `postgres` |
 | Engine base URL | `IFLASH_API_BASE_URL` | `http://localhost:10023` |
 
 Schema is created automatically (`spring.jpa.hibernate.ddl-auto=update`).

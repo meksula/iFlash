@@ -1,10 +1,10 @@
 spring:
   application:
-    name: marlin-broker-platform
+    name: iflash-broker-platform
   datasource:
-    url: ${MARLIN_DB_URL:jdbc:postgresql://localhost:5432/marlin}
-    username: ${MARLIN_DB_USER:postgres}
-    password: ${MARLIN_DB_PASSWORD:postgres}
+    url: ${IBP_DB_URL:jdbc:postgresql://localhost:5432/iflash_broker_platform}
+    username: ${IBP_DB_USER:postgres}
+    password: ${IBP_DB_PASSWORD:postgres}
   jpa:
     hibernate:
       ddl-auto: update

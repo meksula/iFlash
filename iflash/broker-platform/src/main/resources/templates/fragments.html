@@ -3,14 +3,16 @@
 <head th:fragment="head(title)">
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title th:text="'Marlin · ' + ${title}">Marlin</title>
-    <link rel="stylesheet" th:href="@{/css/marlin.css}"/>
+    <title th:text="'iFlash Broker Platform · ' + ${title}">iFlash Broker Platform</title>
+    <link rel="icon" type="image/png" th:href="@{/img/favicon.png}"/>
+    <link rel="apple-touch-icon" th:href="@{/img/apple-touch-icon.png}"/>
+    <link rel="stylesheet" th:href="@{/css/ibp.css}"/>
 </head>
 <body>
 
 <nav th:fragment="header" class="topbar">
-    <a class="brand" th:href="@{/}">
-        <span class="brand-mark">▴</span> Marlin
+    <a class="brand" th:href="@{/}" aria-label="iFlash Broker Platform">
+        <img class="brand-logo" th:src="@{/img/ibp-logo.png}" alt="iFlash Broker Platform (iBP)"/>
     </a>
     <div class="nav-links">
         <a th:href="@{/}">Dashboard</a>
