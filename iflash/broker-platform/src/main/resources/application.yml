@@ -21,3 +21,11 @@ server:
 iflash:
   api:
     base-url: ${IFLASH_API_BASE_URL:http://localhost:10023}
+
+ibp:
+  jwt:
+    # HS256 signing secret (>= 256-bit). Override in prod via IBP_JWT_SECRET.
+    secret: ${IBP_JWT_SECRET:dev-only-change-me-ibp-broker-platform-jwt-signing-secret-256bit}
+    ttl: ${IBP_JWT_TTL:PT12H}
+  cors:
+    allowed-origin: ${IBP_CORS_ALLOWED_ORIGIN:http://localhost:4200}

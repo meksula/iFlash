@@ -1,0 +1,51 @@
+<div class="container">
+  @if (engineError()) {
+    <div class="flash flash-warn">
+      Could not reach the trading engine (iflash-platform on port 10023). Start it to see live data.
+    </div>
+  }
+
+  <div class="hero">
+    <div>
+      <h1>Welcome back</h1>
+      <p class="muted">{{ auth.email() }}</p>
+    </div>
+    <div class="balance-card">
+      <span class="label">Available balance</span>
+      <span class="value">${{ (auth.balance() ?? 0) | number: '1.2-2' }}</span>
+      <a class="btn btn-ghost btn-small" routerLink="/wallet">Top up</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Favorites</h2>
+      <a class="btn btn-small" routerLink="/instruments">Browse instruments</a>
+    </div>
+
+    @if (loading()) {
+      <p class="empty">Loading…</p>
+    } @else if (favorites().length === 0) {
+      <p class="empty">No favorites yet. Open an instrument and star it to pin it here.</p>
+    } @else {
+      <table class="table">
+        <thead>
+          <tr><th>Ticker</th><th class="num">Last price</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (fav of favorites(); track fav.ticker) {
+            <tr>
+              <td class="mono">{{ fav.ticker }}</td>
+              <td class="num mono">
+                {{ fav.currentPrice !== null ? '$' + (fav.currentPrice | number: '1.2-4') : '—' }}
+              </td>
+              <td class="num">
+                <a class="btn btn-small btn-primary" [routerLink]="['/instruments', fav.ticker]">Trade</a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>

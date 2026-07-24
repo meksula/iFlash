@@ -38,7 +38,20 @@ mvn -f broker-platform/pom.xml spring-boot:run
 ```
 Open http://localhost:8090 and sign in with any email — the account is created on first login with a
 $0.00 balance. Top up via Wallet, browse Instruments, favorite some, open one to chart it and place
-orders.
+orders. (This URL serves the legacy server-rendered Thymeleaf UI.)
+
+## Frontend (Angular SPA)
+The Angular client lives in [`broker-platform-ui/`](broker-platform-ui) and talks to the backend over
+the JSON API under `/api/**` (JWT bearer auth). It is a standalone Angular 21 app — its own npm build,
+independent of Maven.
+
+```bash
+cd broker-platform/broker-platform-ui
+npm install        # first time only
+npm start          # ng serve on http://localhost:4200
+```
+`proxy.conf.json` forwards `/api` and `/app` to the backend on `:8090`, so run the Spring app first.
+Sign in with any email; the JWT is stored in the browser and sent as `Authorization: Bearer …`.
 
 ## Tests
 ```bash

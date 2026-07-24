@@ -1,0 +1,44 @@
+<div class="container">
+  <h1>Instruments</h1>
+  <p class="muted">Live markets from the iFlash engine. Star an instrument to pin it to your dashboard.</p>
+
+  @if (engineError()) {
+    <div class="flash flash-warn">
+      Could not reach the trading engine (iflash-platform on port 10023). Start it to see live data.
+    </div>
+  }
+
+  <div class="card">
+    @if (loading()) {
+      <p class="empty">Loading…</p>
+    } @else if (instruments().length === 0) {
+      <p class="empty">No instruments available.</p>
+    } @else {
+      <table class="table">
+        <thead>
+          <tr><th></th><th>Ticker</th><th class="num">Last price</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (it of instruments(); track it.ticker) {
+            <tr>
+              <td>
+                <button class="star" [class.star-on]="isFavorite(it.ticker)"
+                        (click)="toggleFavorite(it.ticker)"
+                        [attr.aria-label]="isFavorite(it.ticker) ? 'Unstar' : 'Star'">
+                  {{ isFavorite(it.ticker) ? '★' : '☆' }}
+                </button>
+              </td>
+              <td class="mono">{{ it.ticker }}</td>
+              <td class="num mono">
+                {{ it.currentPrice !== null ? '$' + (it.currentPrice | number: '1.2-4') : '—' }}
+              </td>
+              <td class="num">
+                <a class="btn btn-small btn-primary" [routerLink]="['/instruments', it.ticker]">Trade</a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>

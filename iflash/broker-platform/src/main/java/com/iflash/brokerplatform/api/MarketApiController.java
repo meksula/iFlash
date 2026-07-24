@@ -1,5 +1,10 @@
-package com.iflash.brokerplatform.market;
+package com.iflash.brokerplatform.api;
 
+import com.iflash.brokerplatform.market.ChartPoint;
+import com.iflash.brokerplatform.market.InstrumentDto;
+import com.iflash.brokerplatform.market.MarketQueryService;
+import com.iflash.brokerplatform.market.OrderBookView;
+import com.iflash.brokerplatform.market.PriceDto;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -7,17 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * Server-side polling proxies consumed by the (legacy Thymeleaf) browser pages. Keeping these on
- * the server hides the engine URL and avoids CORS. The Angular client uses {@code /api/market/*}.
- */
+/** Live market data for the Angular client (JWT-guarded mirror of {@code /app/*}). */
 @RestController
-@RequestMapping("/app")
-class MarketController {
+@RequestMapping("/api/market")
+class MarketApiController {
 
     private final MarketQueryService market;
 
-    MarketController(MarketQueryService market) {
+    MarketApiController(MarketQueryService market) {
         this.market = market;
     }
 

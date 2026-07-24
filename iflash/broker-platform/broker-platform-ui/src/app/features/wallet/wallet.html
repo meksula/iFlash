@@ -1,0 +1,55 @@
+<div class="container">
+  <h1>Wallet</h1>
+
+  @if (message()) { <div class="flash flash-ok">{{ message() }}</div> }
+  @if (error()) { <div class="flash flash-err">{{ error() }}</div> }
+
+  <div class="wallet-grid">
+    <div>
+      <div class="balance-card flat">
+        <span class="label">Available balance</span>
+        <span class="value">${{ (auth.balance() ?? 0) | number: '1.2-2' }}</span>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Top up</h2></div>
+        <p class="muted small">Simulated payment gateway — no real money moves.</p>
+        <form class="topup-form" (submit)="topUp($event)">
+          <div class="quick-amounts">
+            @for (q of quickAmounts; track q) {
+              <button type="button" class="btn btn-small" (click)="amount.set(q)">${{ q }}</button>
+            }
+          </div>
+          <label for="amount">Amount</label>
+          <input id="amount" type="number" min="1" step="0.01" placeholder="0.00"
+                 [value]="amount() ?? ''" (input)="amount.set(+$any($event.target).value || null)" />
+          <button type="submit" class="btn btn-primary btn-block" [disabled]="busy()"
+                  style="margin-top: 12px">
+            {{ busy() ? 'Processing…' : 'Top up' }}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Payment history</h2></div>
+      @if (loading()) {
+        <p class="empty">Loading…</p>
+      } @else if (payments().length === 0) {
+        <p class="empty">No top-ups yet.</p>
+      } @else {
+        <table class="table compact">
+          <thead><tr><th>When</th><th class="num">Amount</th></tr></thead>
+          <tbody>
+            @for (p of payments(); track p.id) {
+              <tr>
+                <td class="small muted">{{ p.createdAt | date: 'short' }}</td>
+                <td class="num mono buy">+${{ p.amount | number: '1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </div>
+</div>

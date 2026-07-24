@@ -1,0 +1,20 @@
+<nav class="topbar">
+  <a class="brand" routerLink="/" aria-label="iFlash Broker Platform">
+    <img class="brand-logo" src="ibp-logo.png" alt="iFlash Broker Platform (iBP)" />
+  </a>
+  <div class="nav-links">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+    <a routerLink="/instruments" routerLinkActive="active">Instruments</a>
+    <a routerLink="/portfolio" routerLinkActive="active">Portfolio</a>
+    <a routerLink="/wallet" routerLinkActive="active">Wallet</a>
+  </div>
+  <div class="nav-account">
+    @if (auth.balance() !== null) {
+      <span class="balance">${{ auth.balance() | number: '1.2-2' }}</span>
+    }
+    <span class="email">{{ auth.email() }}</span>
+    <button type="button" class="btn btn-ghost btn-small" (click)="logout()">Logout</button>
+  </div>
+</nav>
+
+<router-outlet></router-outlet>

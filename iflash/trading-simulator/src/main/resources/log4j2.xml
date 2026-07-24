@@ -23,7 +23,6 @@
     </Appenders>
 
     <Loggers>
-        <!-- ta4j is chatty at DEBUG; keep it quiet. -->
         <Logger name="org.ta4j" level="WARN"/>
 
         <Root level="INFO">
