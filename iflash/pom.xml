@@ -14,6 +14,7 @@
         <module>iflash-platform</module>
         <module>iflash-integration-tests</module>
         <module>trading-simulator</module>
+        <module>broker-platform</module>
     </modules>
 
     <dependencyManagement>
