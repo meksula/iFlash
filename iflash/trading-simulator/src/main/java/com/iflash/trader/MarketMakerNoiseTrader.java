@@ -2,6 +2,8 @@ package com.iflash.trader;
 
 import com.iflash.toolkit.ApiToolkit;
 import com.iflash.toolkit.FinancialInstrumentInfo;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,6 +19,8 @@ import java.util.Random;
  * fine; quotes stay well inside the engine's ±15% price corridor.
  */
 public class MarketMakerNoiseTrader implements Trader {
+
+    private static final Logger log = LogManager.getLogger(MarketMakerNoiseTrader.class);
 
     private static final Random RANDOM = new Random();
 
@@ -67,7 +71,7 @@ public class MarketMakerNoiseTrader implements Trader {
             String side = RANDOM.nextBoolean() ? "BID" : "ASK";
             apiToolkit.placeMarketOrder(side, ticker, 1 + RANDOM.nextInt(MAX_CROSS_SIZE));
         }
-        System.out.println("[" + name + "] quoted " + ticker + " bid=" + bid + " ask=" + ask);
+        log.info("[{}] quoted {} bid={} ask={}", name, ticker, bid, ask);
     }
 
     private double round2(double value) {

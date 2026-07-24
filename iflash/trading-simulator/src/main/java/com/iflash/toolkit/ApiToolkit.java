@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,6 +18,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class ApiToolkit {
+
+    private static final Logger log = LogManager.getLogger(ApiToolkit.class);
 
     private final String baseUrl = "http://localhost:10023";
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -87,7 +91,7 @@ public class ApiToolkit {
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
-                System.out.println("HTTP request failed with status code: " + response.statusCode() + " and body: " + response.body());
+                log.warn("HTTP request failed with status code: {} and body: {}", response.statusCode(), response.body());
                 return ApiResponse.empty(response.statusCode());
             }
             return ApiResponse.readResponse(response.statusCode(), response.body(),bodyType);
