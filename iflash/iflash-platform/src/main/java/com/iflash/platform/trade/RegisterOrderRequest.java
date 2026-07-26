@@ -7,11 +7,13 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
 @ToString
 class RegisterOrderRequest {
 
+    private UUID orderId;
     private OrderDirection orderDirection;
     private OrderType orderType;
     private String ticker;
@@ -19,6 +21,6 @@ class RegisterOrderRequest {
     private Long volume;
 
     RegisterOrderCommand command() {
-        return new RegisterOrderCommand(orderDirection, orderType, ticker, price, volume);
+        return new RegisterOrderCommand(orderId, orderDirection, orderType, ticker, price, volume);
     }
 }

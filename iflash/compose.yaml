@@ -3,7 +3,7 @@ services:
     image: 'postgres:latest'
     environment:
       - 'POSTGRES_DB=iflash'
-      - 'POSTGRES_PASSWORD=password'
       - 'POSTGRES_USER=iflash'
+      - 'POSTGRES_PASSWORD=password'
     ports:
       - '5432'
