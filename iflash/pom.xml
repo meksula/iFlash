@@ -10,11 +10,18 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>broker-management-service</module>
+        <module>gateway-service</module>
+        <module>matching-engine-service</module>
+        <module>order-book-service</module>
+        <module>rates-service</module>
+        <module>settlement-service</module>
+        <module>trading-service</module>
         <module>iflash-engine</module>
-        <module>iflash-platform</module>
-        <module>iflash-integration-tests</module>
-        <module>trading-simulator</module>
-        <module>broker-platform</module>
+
+        <module>helpers/iflash-platform</module>
+        <module>helpers/trading-simulator</module>
+        <module>helpers/broker-platform</module>
     </modules>
 
     <dependencyManagement>

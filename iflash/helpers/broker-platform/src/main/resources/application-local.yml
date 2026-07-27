@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: iflash-broker-platform
+  datasource:
+    url: jdbc:postgresql://localhost:5432/iflash_broker_platform
+    username: fenige
+    password: fenige
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8090
+
+iflash:
+  api:
+    base-url: ${IFLASH_API_BASE_URL:http://localhost:10023}

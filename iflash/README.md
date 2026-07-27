@@ -2,7 +2,7 @@
 
 iflash is a fast, efficient, real-time response app for stock market simulation.
 
-![iflash system logo](iflash-logo.png)
+![iflash system logo](assets/iflash-logo.png)
 
 <h2>iflash API description</h2>
 
