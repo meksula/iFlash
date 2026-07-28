@@ -21,6 +21,11 @@ services:
   gateway-service:
     image: gateway-service:latest
     container_name: gateway-service
+    mem_limit: 512m
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dump/gateway-service.hprof"
+    volumes:
+      - ${HOME}/Development/volumes/iflash-heapdumps:/dump
     ports:
       - "8080:8080"
     restart: on-failure:2
@@ -28,6 +33,11 @@ services:
   broker-management-service:
     image: broker-management-service:latest
     container_name: broker-management-service
+    mem_limit: 512m
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dump/broker-management-service.hprof"
+    volumes:
+      - ${HOME}/Development/volumes/iflash-heapdumps:/dump
     depends_on:
       postgres:
         condition: service_healthy
@@ -36,6 +46,11 @@ services:
   matching-engine-service:
     image: matching-engine-service:latest
     container_name: matching-engine-service
+    mem_limit: 512m
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dump/matching-engine-service.hprof"
+    volumes:
+      - ${HOME}/Development/volumes/iflash-heapdumps:/dump
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,6 +59,11 @@ services:
   order-book-service:
     image: order-book-service:latest
     container_name: order-book-service
+    mem_limit: 512m
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dump/order-book-service.hprof"
+    volumes:
+      - ${HOME}/Development/volumes/iflash-heapdumps:/dump
     depends_on:
       postgres:
         condition: service_healthy
@@ -52,6 +72,11 @@ services:
   rates-service:
     image: rates-service:latest
     container_name: rates-service
+    mem_limit: 512m
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dump/rates-service.hprof"
+    volumes:
+      - ${HOME}/Development/volumes/iflash-heapdumps:/dump
     depends_on:
       postgres:
         condition: service_healthy
@@ -60,6 +85,11 @@ services:
   settlement-service:
     image: settlement-service:latest
     container_name: settlement-service
+    mem_limit: 512m
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dump/settlement-service.hprof"
+    volumes:
+      - ${HOME}/Development/volumes/iflash-heapdumps:/dump
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,6 +98,11 @@ services:
   trading-service:
     image: trading-service:latest
     container_name: trading-service
+    mem_limit: 512m
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dump/trading-service.hprof"
+    volumes:
+      - ${HOME}/Development/volumes/iflash-heapdumps:/dump
     depends_on:
       postgres:
         condition: service_healthy
