@@ -1,9 +1,74 @@
+name: iflash
+
 services:
   postgres:
-    image: 'postgres:latest'
+    image: postgres:17
+    container_name: iflash-postgres
     environment:
-      - 'POSTGRES_DB=iflash'
-      - 'POSTGRES_USER=iflash'
-      - 'POSTGRES_PASSWORD=password'
+      POSTGRES_DB: iflash
+      POSTGRES_USER: iflash
+      POSTGRES_PASSWORD: password
     ports:
-      - '5432'
+      - "5433:5432"
+    volumes:
+      - ${HOME}/Development/volumes/iflash-postgresql:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iflash -d iflash"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gateway-service:
+    image: gateway-service:latest
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    restart: on-failure:2
+
+  broker-management-service:
+    image: broker-management-service:latest
+    container_name: broker-management-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure:2
+
+  matching-engine-service:
+    image: matching-engine-service:latest
+    container_name: matching-engine-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure:2
+
+  order-book-service:
+    image: order-book-service:latest
+    container_name: order-book-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure:2
+
+  rates-service:
+    image: rates-service:latest
+    container_name: rates-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure:2
+
+  settlement-service:
+    image: settlement-service:latest
+    container_name: settlement-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure:2
+
+  trading-service:
+    image: trading-service:latest
+    container_name: trading-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure:2
