@@ -12,9 +12,16 @@ Spring Boot 4.1 · Java 21 · Thymeleaf · Spring Data JPA · PostgreSQL · Trad
 
 ## Prerequisites
 1. **JDK 21**.
-2. **PostgreSQL** running locally. Create an empty database:
-   ```sql
-   CREATE DATABASE iflash_broker_platform;
+2. **PostgreSQL** running locally.
+ 
+Example command for docker container creation:
+ ```shell
+   docker run --name iflash-postgres \
+    -e POSTGRES_PASSWORD=postgres \
+    -v ~/Development/volumes/postgresql:/var/lib/postgresql \
+    -v ~/Development/iFlash/helpers/broker-platform/src/main/resources/scripts/db-init.sql:/docker-entrypoint-initdb.d/init.sql \
+    -p 5432:5432 \
+    -d postgres:18.6
    ```
 3. **The iFlash engine** (`iflash-platform`) running on port **10023** — that is the market data /
    trading API this app consumes. For trades to actually fill you also need liquidity in the book,

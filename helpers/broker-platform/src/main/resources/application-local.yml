@@ -3,8 +3,8 @@ spring:
     name: iflash-broker-platform
   datasource:
     url: jdbc:postgresql://localhost:5432/iflash_broker_platform
-    username: fenige
-    password: fenige
+    username: iflash
+    password: iflash
   jpa:
     hibernate:
       ddl-auto: update
