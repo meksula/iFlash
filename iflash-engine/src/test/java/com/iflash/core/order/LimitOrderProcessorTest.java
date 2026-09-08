@@ -324,6 +324,12 @@ class LimitOrderProcessorTest {
     }
 
     @Test
+    @DisplayName("Should execute Buy and Sell Limit order at best available prices even if limit is equal, for example: buy limit price: 250.00, then sell limit price: 250.00 -> we have match")
+    void shouldExecuteBuyOrSellLimitOrderAtBestAvailablePriceOrEqual() {
+        // TODO: implement test
+    }
+
+    @Test
     @DisplayName("Should correctly update remaining volume after partial execution")
     void shouldUpdateRemainingVolumeAfterPartialExecution() {
         // TODO: implement test

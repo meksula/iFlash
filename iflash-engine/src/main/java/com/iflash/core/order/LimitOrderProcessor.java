@@ -82,7 +82,7 @@ class LimitOrderProcessor {
         Order bestPriceAskOrder = orders.peek();
         if (bestPriceAskOrder != null) {
             BigDecimal bestAskPrice = bestPriceAskOrder.getPrice();
-            if (bidPriceLimit.compareTo(bestAskPrice) > 0) {
+            if (bidPriceLimit.compareTo(bestAskPrice) >= 0) {
                 return orders.poll();
             }
         }
@@ -144,7 +144,7 @@ class LimitOrderProcessor {
         Order bestPriceAskOrder = orders.peek();
         if (bestPriceAskOrder != null) {
             BigDecimal bestAskPrice = bestPriceAskOrder.getPrice();
-            if (askPriceLimit.compareTo(bestAskPrice) < 0) {
+            if (askPriceLimit.compareTo(bestAskPrice) <= 0) {
                 return orders.poll();
             }
         }

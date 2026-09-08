@@ -29,7 +29,7 @@ class QuotationAggregatorDefaultTest {
     private final long volume = 1L;
 
     @Test
-    @DisplayName("Should correctly calculate Quotation for Financial Instrument when buy order finished")
+    @DisplayName("Should correctly calculate Quotation for Financial Instrument when MARKET buy order finished")
     void shouldCorrectlyCalculateQuotationForFinancialInstrumentWhenBuyOrderFinished() {
         Map<String, List<Quotation>> quotations = new HashMap<>();
         Map<String, List<Quotation>> theoreticalQuotations = new HashMap<>();

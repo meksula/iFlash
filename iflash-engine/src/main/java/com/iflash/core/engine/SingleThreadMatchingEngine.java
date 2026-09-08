@@ -69,8 +69,7 @@ public class SingleThreadMatchingEngine implements MatchingEngine, TradingOperat
 
     @Override
     public OrderRegistrationResult registerOrder(RegisterOrderCommand incomingRegisterOrderCommand) {
-        RegisterOrderCommand registerOrderCommand = incomingRegisterOrderCommand.withMarketPricePlusSpread(quotationProvider().getCurrentQuote(incomingRegisterOrderCommand.ticker()),
-                                                                                                           BigDecimal.valueOf(0.0100).setScale(4, RoundingMode.HALF_UP));
+        RegisterOrderCommand registerOrderCommand = incomingRegisterOrderCommand.withPrice(quotationProvider().getCurrentQuote(incomingRegisterOrderCommand.ticker()));
         boolean orderRegistrationPriceValid = orderRegistrationValidator.isOrderRegistrationPriceValid(registerOrderCommand.ticker(), registerOrderCommand.price());
         if (orderRegistrationPriceValid) {
             OrderRegistrationResult orderRegistrationResult = orderBook.registerOrder(registerOrderCommand);
