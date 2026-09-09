@@ -17,6 +17,7 @@
         <module>rates-service</module>
         <module>settlement-service</module>
         <module>trading-service</module>
+        <module>instrument-service</module>
         <module>iflash-engine</module>
 
         <module>helpers/iflash-platform</module>
