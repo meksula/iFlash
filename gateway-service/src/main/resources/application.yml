@@ -22,3 +22,7 @@ spring:
               uri: http://instrument-service
               predicates:
                 - Path=/api/v1/instrument
+            - id: broker-management-service
+              uri: http://broker-management-service
+              predicates:
+                - Path=/api/v1/broker

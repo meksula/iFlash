@@ -1,4 +1,4 @@
-package com.iflash.platform.maintenance;
+package com.iflash.instrument.data;
 
 import java.math.BigDecimal;
 

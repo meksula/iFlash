@@ -3,3 +3,15 @@ server:
 spring:
   application:
     name: instrument-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        spring.json.add.type.headers: false
+
+instrument:
+  initial-data-path: '/csv/initial-test-companies.csv'
