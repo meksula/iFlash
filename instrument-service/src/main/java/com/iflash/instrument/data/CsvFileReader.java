@@ -6,18 +6,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Slf4j
-public class CsvCompanyReader {
+public class CsvFileReader {
 
-    public List<Company> read(String path) {
+    public Set<FinancialInstrumentInitial> read(String path) {
         if (path == null || path.isEmpty()) {
             log.error("Empty initial ticker list!");
-            return List.of();
+            return Set.of();
         }
-        List<Company> companies = new ArrayList<>();
+        Set<FinancialInstrumentInitial> companies = new HashSet<>();
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(path)))) {
             String line;
@@ -31,7 +31,7 @@ public class CsvCompanyReader {
                 String ticker = parts[1].trim();
                 String price = parts[3].trim();
 
-                companies.add(new Company(ticker, new BigDecimal(price)));
+                companies.add(new FinancialInstrumentInitial(ticker, new BigDecimal(price)));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

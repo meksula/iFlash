@@ -2,6 +2,7 @@ package com.iflash.instrument.config;
 
 import com.iflash.instrument.data.FinancialInstrumentInitializedEvent;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.common.config.TopicConfig;
 import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,8 @@ class KafkaConfig {
         return TopicBuilder.name("instrument.initialized")
                 .partitions(1)
                 .replicas(1)
+                .compact()
+                .config(TopicConfig.MIN_COMPACTION_LAG_MS_CONFIG, "0")
                 .build();
     }
 }
