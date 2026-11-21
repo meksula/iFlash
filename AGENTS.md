@@ -43,12 +43,29 @@ Transform tasks into verifiable goals:
 "Refactor X" → "Ensure tests pass before and after"
 For multi-step tasks, state a brief plan:
 
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
+   [Step] → verify: [check]
+   [Step] → verify: [check]
+   [Step] → verify: [check]
+   
    Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
 
 5. Additionals
-Please use my code style. 
-Never do more that it is required.
+   Please use my code style.
+   Never do more that it is required.
+
+6. Shared Context
+   Architecture discussions and decisions happen outside Claude Code, in a separate design agent.
+   Their outcome is written to docs/context/ - this is how knowledge is exchanged between agents.
+   Reading it is not required for every task.
+   Check it when you need background: why something is designed this way, what the project aims for,
+   what is already known to be broken (docs/context/open-items.md).
+   Code wins over these files - if they disagree, the files are out of date.
+   Don't edit docs/context/ unless asked. If your change makes something there outdated, say so in your summary.
+
+
+7. Sessions
+   You should write some kind of summary in docs/context/sessions/ after your job is done. 
+   Use {date}-{summary}.md file name format.
+   When you finish a task, write a short summary in docs/context/sessions/. Name the file {date}-{summary}.md, 
+   where {date} is YYYY-MM-DD and {summary} is a few words in kebab-case, e.g. 2026-11-21-fix-trading-simulator-parent-pom.md.
