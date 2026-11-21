@@ -2,8 +2,10 @@ package com.iflash.instrument;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
-@SpringBootTest
+@Import(TestcontainersConfiguration.class)
+@SpringBootTest(properties = "spring.jpa.hibernate.ddl-auto=create-drop")
 class InstrumentServiceApplicationTests {
 
     @Test

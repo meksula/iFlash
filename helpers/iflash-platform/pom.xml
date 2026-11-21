@@ -18,6 +18,7 @@
         <java.version>25</java.version>
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
+        <testcontainers.version>1.21.4</testcontainers.version>
         <!--        <grpc.version>1.74.0</grpc.version>-->
         <!--        <protobuf-java.version>4.31.1</protobuf-java.version>-->
         <!--        <spring-grpc.version>0.11.0</spring-grpc.version>-->
