@@ -35,7 +35,6 @@ IntelliJ runs on Windows and opens the project from WSL:
 ## Building
 
 ```bash
-mvn -N install                    # install the root POM into ~/.m2 (see open-items.md)
 mvn -T 1C -DskipTests package     # build all modules
 mvn verify                        # with tests; Testcontainers uses Docker Desktop
 ```

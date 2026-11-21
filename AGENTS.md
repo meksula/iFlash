@@ -58,8 +58,7 @@ For multi-step tasks, state a brief plan:
    Architecture discussions and decisions happen outside Claude Code, in a separate design agent.
    Their outcome is written to docs/context/ - this is how knowledge is exchanged between agents.
    Reading it is not required for every task.
-   Check it when you need background: why something is designed this way, what the project aims for,
-   what is already known to be broken (docs/context/open-items.md).
+   Check it when you need background: why something is designed this way, what the project aims for.
    Code wins over these files - if they disagree, the files are out of date.
    Don't edit docs/context/ unless asked. If your change makes something there outdated, say so in your summary.
 

@@ -20,9 +20,8 @@ by ticker, so a new consumer reading from `earliest` gets the current catalogue 
 rather than every historical mutation. `min.compaction.lag.ms=0` because there is no reason to keep old
 versions of a key around.
 
-**Event timestamps.** `ZonedDateTime` is not used in events. `TradeExecutedEvent` carries epoch millis
-(`long`), consistent with the REST API. Note that `FinancialInstrumentInitializedEvent` uses `Instant`;
-`Instant` is acceptable, `ZonedDateTime` is not. Pick one convention and record it in an ADR.
+**Event timestamps.** `ZonedDateTime` is not used in events. Epoch millis (`long`, consistent with the
+REST API) and `Instant` are both acceptable; one convention is still to be chosen in an ADR.
 
 **Spring Boot 4 specifics.** Use `spring-boot-starter-kafka` (not bare `spring-kafka`); `KafkaProperties`
 moved to `org.springframework.boot.kafka.autoconfigure`; `JsonSerializer` is deprecated in favour of

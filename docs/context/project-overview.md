@@ -29,21 +29,21 @@ The repository currently holds two generations of the system side by side.
 | `../../helpers/trading-simulator` | Bots that trade against the platform to create liquidity and price movement (random noise, market maker, trend following, mean reversion, breakout and others) | n/a |
 | `../../helpers/broker-platform` | "iFlash Broker Platform": broker simulator with users, wallet, simulated payment gateway, favourites, positions. Thymeleaf UI plus an Angular 21 SPA (`broker-platform-ui`, port 4200) over a JWT-secured JSON API. Consumes `iflash-platform` | 8090 |
 
-### Target microservices (being extracted, mostly skeletons)
+### Target microservices
 
 The monolithic logic is being split into single-responsibility services (issue #18). All are Spring Boot
 4.1, WebFlux, container images built with **Jib** (`eclipse-temurin:25-jre` base).
 
-| Service | Responsibility | State |
-|---|---|---|
-| `gateway-service` | Spring Cloud Gateway, single entry point, routes `/api/v1/**` to services by Kubernetes DNS name | Routing configured |
-| `instrument-service` | Reference data: list of tradable instruments. Loads the initial catalogue from CSV, persists it (JPA, PostgreSQL) and publishes `FinancialInstrumentInitializedEvent` to the compacted Kafka topic `instrument.initialized` | Implemented |
-| `rates-service` | Market data: current price and quotation history | Controller stub |
-| `order-book-service` | Order book views | Skeleton |
-| `trading-service` | Order placement (`/api/v1/trade/order`) | Skeleton |
-| `matching-engine-service` | Order matching | Skeleton |
-| `settlement-service` | Post-trade settlement (clearing and settlement simulation) | Skeleton |
-| `broker-management-service` | Broker-facing management API (`/api/v1/broker`); the service being split up in #18 | Skeleton |
+| Service | Responsibility |
+|---|---|
+| `gateway-service` | Spring Cloud Gateway, single entry point, routes `/api/v1/**` to services by Kubernetes DNS name |
+| `instrument-service` | Reference data: list of tradable instruments. Loads the initial catalogue from CSV, persists it (JPA, PostgreSQL) and publishes `FinancialInstrumentInitializedEvent` to the compacted Kafka topic `instrument.initialized` |
+| `rates-service` | Market data: current price and quotation history |
+| `order-book-service` | Order book views |
+| `trading-service` | Order placement (`/api/v1/trade/order`) |
+| `matching-engine-service` | Order matching |
+| `settlement-service` | Post-trade settlement (clearing and settlement simulation) |
+| `broker-management-service` | Broker-facing management API (`/api/v1/broker`); the service being split up in #18 |
 
 Gateway routes (`../../gateway-service/src/main/resources/application.yml`):
 
@@ -56,7 +56,7 @@ Gateway routes (`../../gateway-service/src/main/resources/application.yml`):
 | `/api/v1/broker` | broker-management-service | 8085 |
 
 Other directories: `..` (architecture diagram drafts, `iflash-arch.drawio`), `requests/` (IntelliJ
-HTTP client requests), `skills/dev-SKILL.md` (the owner's Java coding conventions skill),
+HTTP client requests), `.claude/` (Claude Code skills and agent definitions),
 `compose.yaml` (local runtime: PostgreSQL plus all microservice images).
 
 ## Domain rules already settled
@@ -71,7 +71,8 @@ HTTP client requests), `skills/dev-SKILL.md` (the owner's Java coding convention
 
 ## Tech stack
 
-- Java 25, Spring Boot 4.1.x, Spring WebFlux, Spring Cloud Gateway (`server.webflux` configuration)
+- Java 25, Spring Boot 4.1.x (`../../helpers/iflash-platform` stays on 3.5.6), Spring WebFlux,
+  Spring Cloud Gateway (`server.webflux` configuration)
 - Apache Kafka 4.3.1 in KRaft mode (no ZooKeeper), Kafka UI; `spring-boot-starter-kafka`,
   `JacksonJsonSerializer`
 - PostgreSQL (17 in `../../compose.yaml`), Redis planned
@@ -83,12 +84,12 @@ HTTP client requests), `skills/dev-SKILL.md` (the owner's Java coding convention
 
 - English for code, commits and technical documents. Design discussions happen in Polish.
 - Conventional Commits style for commit messages.
-- Coding style is described in `../../skills/dev-SKILL.md`: rich (non-anemic) domain models, SOLID, design
+- Coding style is described in `../../.claude/skills/dev/SKILL.md`: rich (non-anemic) domain models, SOLID, design
   patterns without over-engineering at code level, modern Java features, no inline comments.
-- Project-wide agent rules are in the root `../../CLAUDE.md`.
+- Project-wide agent rules are in the root `../../AGENTS.md`, imported by `../../CLAUDE.md`.
 - The owner uses a Claude Code multi-agent pipeline (analyst → implementer → reviewer → tester). For now
   the owner writes the ticket, pushes commits and starts the next iteration after review. Agent
-  definitions live in `.claude/`, which is git-ignored.
+  definitions live in `.claude/agents/`.
 
 ## Roadmap
 
@@ -107,9 +108,3 @@ Keycloak, Vault, MinIO, ClickHouse, Elasticsearch.
 
 Learning path for TLS: NLB TCP pass-through → Envoy terminating TLS, certificates from cert-manager and
 Let's Encrypt delivered over SDS (SNI routing, rotation without restart, L4 vs L7).
-
-Feature backlog for the simulator (not prioritised): order cancel/modify/status/history; STOP,
-STOP-LIMIT, IOC, FOK, GTC orders; cash balance and fund locks; positions with average price and P&L;
-trade tape; OHLC candles; Level 2 depth over WebSocket/SSE; trading hours and circuit breakers; admin
-endpoints; API authentication, rate limiting and idempotent order creation; audit log. FIX protocol is
-deferred.
