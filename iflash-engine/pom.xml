@@ -89,6 +89,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.4</version>
                 <configuration>
                     <!-- Mockito's ByteBuddy 1.15.11 predates JDK 25: allow it to instrument the newer
                          class-file version and to self-attach its agent. -->

@@ -5,6 +5,7 @@
         <groupId>com.iflash</groupId>
         <artifactId>iflash</artifactId>
         <version>1.0.0</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>trading-simulator</artifactId>
@@ -61,6 +62,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
                 <configuration>
                     <source>25</source>
                     <target>25</target>
