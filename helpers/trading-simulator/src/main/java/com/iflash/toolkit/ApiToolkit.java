@@ -16,12 +16,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class ApiToolkit {
 
     private static final Logger log = LogManager.getLogger(ApiToolkit.class);
 
-    private final String baseUrl = "http://localhost:10023";
+    private final String baseUrl = "http://localhost:8080";
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
 
@@ -30,7 +31,16 @@ public class ApiToolkit {
     }
 
     public ApiResponse<List<FinancialInstrumentInfo>> getInstruments() {
-        return get("/api/v1/instrument", new TypeReference<>() {});
+        ApiResponse<List<FinancialInstrumentInfo>> instruments = get("/api/v1/instrument", new TypeReference<>() {});
+        if (instruments.getResponseBody() == null) {
+            return instruments;
+        }
+        List<FinancialInstrumentInfo> instrumentsWithCurrentPrice = instruments.getResponseBody()
+                                                                               .stream()
+                                                                               .map(instrument -> getCurrentQuotation(instrument.ticker()).getResponseBody())
+                                                                               .filter(Objects::nonNull)
+                                                                               .toList();
+        return new ApiResponse<>(instruments.getHttpStatus(), instrumentsWithCurrentPrice);
     }
 
     public ApiResponse<OrderBookSnapshotResponse> getOrderBook(String ticker, int page, int size, String orderBy, String orderDirection) {

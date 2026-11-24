@@ -54,7 +54,9 @@ public class FinancialInstrumentDataLoader {
     }
 
     private void saveEntities(Set<FinancialInstrumentInitial> financialInstrumentInitialSet) {
+        Set<String> existingTickers = financialInstrumentRepository.findAllTickers();
         Set<FinancialInstrumentEntity> financialInstrumentEntities = financialInstrumentInitialSet.stream()
+                .filter(financialInstrumentInitial -> !existingTickers.contains(financialInstrumentInitial.ticker()))
                 .map(financialInstrumentInitial -> FinancialInstrumentEntity.createNew(financialInstrumentInitial.ticker(), financialInstrumentInitial.price()))
                 .collect(Collectors.toSet());
 

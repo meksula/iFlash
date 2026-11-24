@@ -8,7 +8,7 @@ import org.springframework.web.client.RestClient;
 
 import java.util.List;
 
-/** Read/write client for the iFlash matching-engine platform (port 10023). */
+/** Read/write client for the iFlash gateway-service (port 8080). */
 @Component
 public class IflashApiClient {
 
@@ -19,11 +19,14 @@ public class IflashApiClient {
     }
 
     public List<InstrumentDto> listInstruments() {
-        return client.get()
-                     .uri("/api/v1/instrument")
-                     .retrieve()
-                     .body(new ParameterizedTypeReference<>() {
-                     });
+        List<InstrumentReferenceDto> instruments = client.get()
+                                                         .uri("/api/v1/instrument")
+                                                         .retrieve()
+                                                         .body(new ParameterizedTypeReference<>() {
+                                                         });
+        return instruments.stream()
+                          .map(instrument -> new InstrumentDto(instrument.ticker(), getPrice(instrument.ticker()).price()))
+                          .toList();
     }
 
     public PriceDto getPrice(String ticker) {

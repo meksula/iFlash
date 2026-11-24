@@ -3,3 +3,6 @@ server:
 spring:
   application:
     name: trading-service
+
+matching-engine-service:
+  url: http://localhost:8086

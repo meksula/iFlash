@@ -3,3 +3,10 @@ server:
 spring:
   application:
     name: rates-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: rates-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
