@@ -2,9 +2,13 @@ package com.iflash;
 
 import com.iflash.toolkit.ApiToolkit;
 import com.iflash.trader.BreakoutTrader;
+import com.iflash.trader.InvestmentFundTrader;
 import com.iflash.trader.LongTermMonkeyTrader;
 import com.iflash.trader.MarketMakerNoiseTrader;
 import com.iflash.trader.MeanReversionTrader;
+import com.iflash.trader.MomentumRotationTrader;
+import com.iflash.trader.OrderBookImbalanceTrader;
+import com.iflash.trader.PairsTrader;
 import com.iflash.trader.RandomNoiseTrader;
 import com.iflash.trader.Trader;
 import com.iflash.trader.TrendFollowingTrader;
@@ -30,6 +34,7 @@ public class TradersBootstrapper {
 
     private static final BigDecimal RETAIL_CASH = BigDecimal.valueOf(100_000.00);
     private static final BigDecimal SMART_MONEY_CASH = BigDecimal.valueOf(250_000.00);
+    private static final BigDecimal INVESTMENT_FUND_CASH = BigDecimal.valueOf(50_000_000.00);
     private static final Currency USD = Currency.getInstance("USD");
 
     private final ApiToolkit apiToolkit;
@@ -65,6 +70,11 @@ public class TradersBootstrapper {
         for (int i = 1; i <= 2; i++) {
             traderSet.add(new BreakoutTrader("Breakout-" + i, apiToolkit, SMART_MONEY_CASH));
         }
+        traderSet.add(new OrderBookImbalanceTrader("Imbalance-1", apiToolkit, SMART_MONEY_CASH));
+        traderSet.add(new MomentumRotationTrader("Momentum-1", apiToolkit, SMART_MONEY_CASH));
+        traderSet.add(new PairsTrader("Pairs-KO-PEP", apiToolkit, SMART_MONEY_CASH, "KO", "PEP"));
+        traderSet.add(new PairsTrader("Pairs-XOM-CVX", apiToolkit, SMART_MONEY_CASH, "XOM", "CVX"));
+        traderSet.add(new InvestmentFundTrader("Fund-BigFish", apiToolkit, INVESTMENT_FUND_CASH));
 
         // Every market needs someone on the losing side. :)
         traderSet.add(new WorldDumbestTrader("Dumbest", apiToolkit, RETAIL_CASH));

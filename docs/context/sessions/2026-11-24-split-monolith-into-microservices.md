@@ -62,6 +62,25 @@ docker run -d --name iflash-kafka --restart unless-stopped -p 9092:9092 \
   -e KAFKA_LOG_DIRS=/var/lib/kafka/data -v iflash-kafka-data:/var/lib/kafka/data apache/kafka:4.1.0
 ```
 
+## New simulator traders
+
+- `OrderBookImbalanceTrader`: compares the volume of the top 10 BID and ASK levels; buys when the bid
+  side clearly dominates (imbalance > 0.4) and sells its position when the ask side does. The only
+  bot that reads the order book.
+- `MomentumRotationTrader`: ranks all tickers by return over the last 30 quotes, holds the top 3 with
+  a positive return and sells whatever drops out of the top.
+- `PairsTrader` (KO/PEP, XOM/CVX): z-score of the price ratio over 60 quotes. Above +2 or below -2
+  it moves into the cheaper leg; when |z| < 0.5 it closes both. Long only, because the bots track
+  their own holdings.
+- `InvestmentFundTrader` ("Fund-BigFish", 50 000 000 USD): wakes up every 5 minutes. The first
+  wake-up records each ticker's price as its fair value. Later wake-ups sell holdings at least 5%
+  above fair value and buy up to 5 tickers at least 5% below it, in blocks worth up to 1 000 000 USD
+  and at most 500 shares. Its blocks are bigger than the available liquidity, so the engine turns
+  the unfilled part into a resting LIMIT order that the fund's account does not track.
+- Shared `TradingAccount` keeps cash and holdings and books the volume actually filled (from the
+  `transactions` list). `TechnicalTrader` books the requested volume instead; left as is.
+- All three ran against the live stack; the pairs logic was also checked with a fake `ApiToolkit`.
+
 ## Open points
 
 - `docs/context/project-overview.md` is outdated: order book route (now matching-engine-service,
