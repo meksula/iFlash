@@ -20,7 +20,6 @@
         <module>instrument-service</module>
         <module>iflash-engine</module>
 
-        <module>helpers/iflash-platform</module>
         <module>helpers/trading-simulator</module>
         <module>helpers/broker-platform</module>
     </modules>

@@ -23,7 +23,7 @@ Example command for docker container creation:
     -p 5432:5432 \
     -d postgres:18.6
    ```
-3. **The iFlash engine** (`iflash-platform`) running on port **10023** — that is the market data /
+3. **The iFlash microservices** behind `gateway-service` on port **8080** — that is the market data /
    trading API this app consumes. For trades to actually fill you also need liquidity in the book,
    so optionally run `trading-simulator` / `traders`.
 
@@ -35,7 +35,7 @@ Defaults live in `src/main/resources/application.yaml`; override via env vars:
 | DB URL | `IBP_DB_URL` | `jdbc:postgresql://localhost:5432/iflash_broker_platform` |
 | DB user | `IBP_DB_USER` | `postgres` |
 | DB password | `IBP_DB_PASSWORD` | `postgres` |
-| Engine base URL | `IFLASH_API_BASE_URL` | `http://localhost:10023` |
+| Engine base URL | `IFLASH_API_BASE_URL` | `http://localhost:8080` |
 
 Schema is created automatically (`spring.jpa.hibernate.ddl-auto=update`).
 

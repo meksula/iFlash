@@ -3,6 +3,13 @@ server:
 spring:
   application:
     name: instrument-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/iflash
+    username: iflash
+    password: iflash
+  jpa:
+    hibernate:
+      ddl-auto: update
   kafka:
     bootstrap-servers: localhost:9092
     producer:

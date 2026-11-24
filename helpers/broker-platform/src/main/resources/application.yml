@@ -20,7 +20,7 @@ server:
 
 iflash:
   api:
-    base-url: ${IFLASH_API_BASE_URL:http://localhost:10023}
+    base-url: ${IFLASH_API_BASE_URL:http://localhost:8080}
 
 ibp:
   jwt:

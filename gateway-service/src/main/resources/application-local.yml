@@ -7,22 +7,22 @@ spring:
         webflux:
           routes:
             - id: rates-service
-              uri: http://rates-service:8081
+              uri: http://localhost:8081
               predicates:
                 - Path=/api/v1/quotation/{ticker}/price,/api/v1/quotation/{ticker}/quotes
-            - id: orderbook-service
-              uri: http://orderbook-service:8082
+            - id: matching-engine-service
+              uri: http://localhost:8086
               predicates:
                 - Path=/api/v1/orderbook/{ticker}
             - id: trading-service
-              uri: http://trading-service:8083
+              uri: http://localhost:8083
               predicates:
                 - Path=/api/v1/trade/order
             - id: instrument-service
-              uri: http://instrument-service:8084
+              uri: http://localhost:8084
               predicates:
                 - Path=/api/v1/instrument
             - id: broker-management-service
-              uri: http://broker-management-service:8085
+              uri: http://localhost:8085
               predicates:
                 - Path=/api/v1/broker
