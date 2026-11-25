@@ -1,4 +1,4 @@
-# 0006. Compacted topics for reference data
+# ADR-0006. Compacted topics for reference data
 
 - Status: Accepted
 - Date: 2026-11-25

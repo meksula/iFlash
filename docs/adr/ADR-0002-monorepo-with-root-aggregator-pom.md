@@ -1,4 +1,4 @@
-# 0002. Monorepo with a root aggregator POM
+# ADR-0002. Monorepo with a root aggregator POM
 
 - Status: Accepted
 - Date: 2026-11-25

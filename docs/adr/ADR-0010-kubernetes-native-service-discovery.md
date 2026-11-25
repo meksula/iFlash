@@ -1,4 +1,4 @@
-# 0010. Kubernetes-native service discovery and gateway routing
+# ADR-0010. Kubernetes-native service discovery and gateway routing
 
 - Status: Accepted
 - Date: 2026-11-25

@@ -1,4 +1,4 @@
-# 0014. Container images with Jib, local Kubernetes loop with Skaffold
+# ADR-0014. Container images with Jib, local Kubernetes loop with Skaffold
 
 - Status: Accepted
 - Date: 2026-11-25

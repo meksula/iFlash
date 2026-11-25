@@ -1,4 +1,4 @@
-# 0012. Persistence conventions
+# ADR-0012. Persistence conventions
 
 - Status: Accepted
 - Date: 2026-11-25
@@ -23,7 +23,7 @@ replicas that start at the same time.
 
 ## Consequences
 
-- Prices compare and round the same way in every service (see also [0013](0013-matching-and-price-rules.md)).
+- Prices compare and round the same way in every service (see also [ADR-0013](ADR-0013-matching-and-price-rules.md)).
 - Initialisation is idempotent and safe with several replicas, and re-runs only when the source file
   changes.
 - **Implementation gap:** `instrument-service` follows the type conventions

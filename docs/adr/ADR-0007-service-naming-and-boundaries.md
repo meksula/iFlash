@@ -1,4 +1,4 @@
-# 0007. Service naming and boundaries
+# ADR-0007. Service naming and boundaries
 
 - Status: Accepted
 - Date: 2026-11-25
@@ -24,5 +24,5 @@ its price) behaves very differently.
 ## Consequences
 
 - Clients that need an instrument with its current price combine two calls or keep a projection
-  ([0008](0008-cqrs-projections-instead-of-synchronous-reads.md)).
+  ([ADR-0008](ADR-0008-cqrs-projections-instead-of-synchronous-reads.md)).
 - High-frequency price updates do not touch the reference data store.

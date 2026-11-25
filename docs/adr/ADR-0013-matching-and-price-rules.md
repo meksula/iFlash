@@ -1,4 +1,4 @@
-# 0013. Order matching and price display rules
+# ADR-0013. Order matching and price display rules
 
 - Status: Accepted
 - Date: 2026-11-25

@@ -1,4 +1,4 @@
-# 0011. TLS termination
+# ADR-0011. TLS termination
 
 - Status: Accepted
 - Date: 2026-11-25

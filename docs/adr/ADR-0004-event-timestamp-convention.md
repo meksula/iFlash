@@ -1,4 +1,4 @@
-# 0004. Timestamp convention in events
+# ADR-0004. Timestamp convention in events
 
 - Status: Proposed
 - Date: 2026-11-25

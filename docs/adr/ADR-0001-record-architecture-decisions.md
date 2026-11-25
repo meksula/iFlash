@@ -1,4 +1,4 @@
-# 0001. Record architecture decisions as ADRs in the repository
+# ADR-0001. Record architecture decisions as ADRs in the repository
 
 - Status: Accepted
 - Date: 2026-11-25
@@ -17,9 +17,9 @@ review, are not versioned together with the code and fit ADRs poorly.
 We record significant architecture decisions as Architecture Decision Records in `docs/adr/`, using
 the Michael Nygard format (Context, Decision, Consequences) with a status and a date.
 
-- Files are named `NNNN-kebab-case-title.md` and numbered sequentially. Numbers are never reused.
+- Files are named `ADR-NNNN-kebab-case-title.md` (for example `ADR-0005-kafka-topic-conventions.md`) and numbered sequentially. Numbers are never reused.
 - An accepted ADR is not rewritten. A changed decision gets a new ADR that supersedes the old one, and
-  the old one's status is set to `Superseded by NNNN`.
+  the old one's status is set to `Superseded by ADR-NNNN`, and the new one states `Supersedes ADR-NNNN`.
 - New ADRs start from [template.md](template.md) and are added to the index in [README.md](README.md).
 - Documentation is kept as code (Markdown and Mermaid in the repository). Publishing with MkDocs
   Material or Docusaurus on GitHub Pages is optional and can be added later.

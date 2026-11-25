@@ -1,6 +1,6 @@
-# NNNN. Title
+# ADR-NNNN. Title
 
-- Status: Proposed | Accepted | Deprecated | Superseded by [NNNN](NNNN-title.md)
+- Status: Proposed | Accepted | Deprecated | Superseded by [ADR-NNNN](ADR-NNNN-title.md)
 - Date: YYYY-MM-DD
 
 ## Context

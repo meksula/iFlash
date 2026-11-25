@@ -1,4 +1,4 @@
-# 0009. matching-engine-service owns the engine and the order book
+# ADR-0009. matching-engine-service owns the engine and the order book
 
 - Status: Accepted
 - Date: 2026-11-25

@@ -1,11 +1,11 @@
-# 0005. Kafka topic conventions: keys, retention and replay
+# ADR-0005. Kafka topic conventions: keys, retention and replay
 
 - Status: Accepted
 - Date: 2026-11-25
 
 ## Context
 
-With Kafka ([0003](0003-kafka-as-the-only-message-broker.md)) several choices have to be made the same
+With Kafka ([ADR-0003](ADR-0003-kafka-as-the-only-message-broker.md)) several choices have to be made the same
 way in every service: what goes into the message key, how long data is kept, and where a new or
 restarted consumer starts reading. Some services (`rates-service`, `matching-engine-service`) keep
 their state only in memory and must rebuild it from Kafka on every start.
@@ -21,7 +21,7 @@ bean built with `TopicBuilder`, with its retention or cleanup policy stated in c
 
 | Topic | Producer | Key | Policy |
 |---|---|---|---|
-| `instrument.initialized` | `instrument-service` | see [0006](0006-compacted-topics-for-reference-data.md) | `cleanup.policy=compact`, `min.compaction.lag.ms=0` |
+| `instrument.initialized` | `instrument-service` | see [ADR-0006](ADR-0006-compacted-topics-for-reference-data.md) | `cleanup.policy=compact`, `min.compaction.lag.ms=0` |
 | `quotation.changed` | `matching-engine-service` | ticker | `retention.ms` = 7 days |
 
 **Consumers can rebuild their state.** Consumers use `auto.offset.reset: earliest`, so a service that
