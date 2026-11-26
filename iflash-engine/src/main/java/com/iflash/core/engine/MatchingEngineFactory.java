@@ -18,13 +18,13 @@ public class MatchingEngineFactory {
     }
 
     private static MatchingEngine buildSingleThreadEngine() {
-        log.info("Single Thread Matching Engine starting");
+        log.debug("Single Thread Matching Engine starting");
 
         QuotationAggregator quotationAggregator = QuotationAggregatorFactory.factorizeQuotationAggregator(GlobalSettings.QUOTATION_CALCULABLE);
         OrderBook orderBook = OrderBookFactory.factorizeOrderBook((QuotationProvider) quotationAggregator);
         SingleThreadMatchingEngine singleThreadMatchingEngine = SingleThreadMatchingEngine.create(orderBook, quotationAggregator);
 
-        log.info("Single Thread Matching Engine successfully initialized and ready for trading");
+        log.debug("Single Thread Matching Engine successfully initialized and ready for trading");
         return singleThreadMatchingEngine;
     }
 }

@@ -19,10 +19,10 @@ class TradeController {
 
     @PostMapping("/order")
     Mono<ResponseEntity<RegisterOrderResponse>> registerOrder(@RequestBody RegisterOrderRequest registerOrderRequest) {
-        log.info("Order registration request: {}", registerOrderRequest);
+        log.debug("Order registration request: {}", registerOrderRequest);
 
         return matchingEngineClient.registerOrder(registerOrderRequest)
-                                   .doOnNext(orderRegistrationResult -> log.info("Order registration end with result: {}", orderRegistrationResult))
+                                   .doOnNext(orderRegistrationResult -> log.debug("Order registration end with result: {}", orderRegistrationResult))
                                    .map(orderRegistrationResult -> ResponseEntity.ok(RegisterOrderResponse.response(orderRegistrationResult, registerOrderRequest)));
     }
 }
