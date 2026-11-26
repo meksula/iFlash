@@ -95,9 +95,9 @@ class Order implements Comparable<Order> {
     }
 
     public void printHistory() {
-        log.info("=== ORDER'S {} HISTORY BEGIN ===", orderUuid);
-        this.orderStateHistory.forEach(orderStateChange -> log.info(orderStateChange.toString()));
-        log.info("=== ORDER'S {} HISTORY ORDERS BEGIN ===", orderUuid);
+        log.debug("=== ORDER'S {} HISTORY BEGIN ===", orderUuid);
+        this.orderStateHistory.forEach(orderStateChange -> log.debug(orderStateChange.toString()));
+        log.debug("=== ORDER'S {} HISTORY ORDERS BEGIN ===", orderUuid);
     }
 
     FinishedTransactionInfo toTransactionInfoWithCurrentState() {

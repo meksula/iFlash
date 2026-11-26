@@ -21,11 +21,11 @@ class OrderController {
 
     @PostMapping
     ResponseEntity<OrderRegistrationResult> registerOrder(@RequestBody RegisterOrderCommand registerOrderCommand) {
-        log.info("Order registration command: {}", registerOrderCommand);
+        log.debug("Order registration command: {}", registerOrderCommand);
 
         OrderRegistrationResult orderRegistrationResult = tradingOperations.registerOrder(registerOrderCommand);
 
-        log.info("Order registration end with result: {}", orderRegistrationResult);
+        log.debug("Order registration end with result: {}", orderRegistrationResult);
         return ResponseEntity.ok(orderRegistrationResult);
     }
 }

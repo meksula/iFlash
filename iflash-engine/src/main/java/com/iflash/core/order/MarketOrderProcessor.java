@@ -51,10 +51,10 @@ class MarketOrderProcessor {
                                               : asksOrdersByTicker.get(registerOrderCommand.ticker());
                     Order idlingOrder = Order.factorize(registerOrderCommand);
                     orderQueue.add(idlingOrder);
-                    log.info("Volume bought in session equals zero, so order have to be placed in queue");
+                    log.debug("Volume bought in session equals zero, so order have to be placed in queue");
                     return OrderRegistrationResult.limitOrderPlacedSuccessfully(registerOrderCommand);
                 }
-                log.info("Partially Fill occured, requested volume: {}, filled volume: {}", volumeRequested, volumeBoughtInSession);
+                log.debug("Partially Fill occured, requested volume: {}, filled volume: {}", volumeRequested, volumeBoughtInSession);
                 OrderRegistrationResult partiallyCompleted = OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut, registerOrderCommand);
                 CurrentQuotation currentQuote = new CurrentQuotation(System.currentTimeMillis(), registerOrderCommand.price());
                 RegisterOrderCommand afterPartialFill = registerOrderCommand.createAfterPartialFillment(currentQuote, partiallyCompleted.orderFillDetails()
