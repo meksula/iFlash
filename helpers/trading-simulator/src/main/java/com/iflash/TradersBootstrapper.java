@@ -46,21 +46,15 @@ public class TradersBootstrapper {
     public Set<Trader> bootstrap() {
         Set<Trader> traderSet = new HashSet<>();
 
-        // Buy-and-hold takers.
         traderSet.add(new LongTermMonkeyTrader("Top Broker", "John", "Doe", apiToolkit, RETAIL_CASH, USD, new HashMap<>()));
         traderSet.add(new LongTermMonkeyTrader("Top Broker", "Kevin", "MacAllister", apiToolkit, RETAIL_CASH, USD, new HashMap<>()));
         traderSet.add(new LongTermMonkeyTrader("Top Broker", "Amy", "Whittaker", apiToolkit, RETAIL_CASH, USD, new HashMap<>()));
-
-        // Market-noise layer: makers provide two-sided LIMIT liquidity and cross the spread,
-        // noise takers add unpredictable MARKET pressure — together they keep the price moving.
         for (int i = 1; i <= 5; i++) {
             traderSet.add(new MarketMakerNoiseTrader("MM-" + i, apiToolkit));
         }
         for (int i = 1; i <= 3; i++) {
             traderSet.add(new RandomNoiseTrader("Noise-" + i, apiToolkit));
         }
-
-        // Smart-money layer: technical-analysis strategies reacting to the tape produced above.
         for (int i = 1; i <= 3; i++) {
             traderSet.add(new TrendFollowingTrader("Trend-" + i, apiToolkit, SMART_MONEY_CASH));
         }
@@ -75,8 +69,6 @@ public class TradersBootstrapper {
         traderSet.add(new PairsTrader("Pairs-KO-PEP", apiToolkit, SMART_MONEY_CASH, "KO", "PEP"));
         traderSet.add(new PairsTrader("Pairs-XOM-CVX", apiToolkit, SMART_MONEY_CASH, "XOM", "CVX"));
         traderSet.add(new InvestmentFundTrader("Fund-BigFish", apiToolkit, INVESTMENT_FUND_CASH));
-
-        // Every market needs someone on the losing side. :)
         traderSet.add(new WorldDumbestTrader("Dumbest", apiToolkit, RETAIL_CASH));
 
         return traderSet;

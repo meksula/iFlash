@@ -1,6 +1,5 @@
 package com.iflash.ratesservice.quotation;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,16 +10,24 @@ class TickerQuotations {
     private final List<Quotation> lastPriceQuotations = new CopyOnWriteArrayList<>();
     private boolean initialized;
 
-    synchronized void initialize(BigDecimal initialPrice) {
+    synchronized void initialize(Quotation initialQuotation) {
         if (initialized) {
             return;
         }
-        lastPriceQuotations.addFirst(new Quotation(System.currentTimeMillis(), initialPrice));
+        insertInTimeOrder(initialQuotation);
         initialized = true;
     }
 
     synchronized void record(Quotation quotation) {
-        lastPriceQuotations.add(quotation);
+        insertInTimeOrder(quotation);
+    }
+
+    private void insertInTimeOrder(Quotation quotation) {
+        int index = lastPriceQuotations.size();
+        while (index > 0 && lastPriceQuotations.get(index - 1).timestamp() > quotation.timestamp()) {
+            index--;
+        }
+        lastPriceQuotations.add(index, quotation);
     }
 
     Quotation current() {

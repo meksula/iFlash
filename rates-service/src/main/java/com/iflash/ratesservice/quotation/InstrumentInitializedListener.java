@@ -19,7 +19,7 @@ class InstrumentInitializedListener implements ConsumerSeekAware {
     @KafkaListener(topics = "instrument.initialized")
     void onInstrumentInitialized(FinancialInstrumentInitializedEvent event) {
         event.instruments()
-             .forEach(instrument -> quotationStore.initTicker(instrument.ticker(), instrument.initialPrice()));
+             .forEach(instrument -> quotationStore.initTicker(instrument.ticker(), event.initialQuotation(instrument)));
         log.info("Initialized quotations of {} instruments from event with routingKey: {}", event.instruments().size(), event.routingKey());
     }
 

@@ -95,3 +95,27 @@ docker run -d --name iflash-kafka --restart unless-stopped -p 9092:9092 \
 - Schema management for instrument-service is `ddl-auto: update` until Flyway (or similar) is chosen.
 - matching-engine-service state is in memory: after its restart the engine starts from initial
   prices while rates-service keeps the replayed history.
+
+## Follow-up 2026-11-25
+
+- **Order book priority (iflash-engine).** Both `PriorityBlockingQueue`s used `Order`'s natural
+  ascending price order, so the head of the bid queue was the *lowest* bid. Every sell hit the worst
+  bid, higher bids never matched (crossed book), and the market drifted down (52 of 55 tickers fell
+  in 20 minutes of play). Queues now use `Order.ASK_PRIORITY` (price ascending) and
+  `Order.BID_PRIORITY` (price descending), with a registration sequence as the time tie-breaker
+  (price-time priority). `Order`'s natural order (used by snapshots) is unchanged.
+- **Lost orders (iflash-engine).** `LimitOrderProcessor` polled the next resting order even after the
+  requested volume was filled, and that order was dropped. It now polls only while volume is left.
+- Tests: three new tests in `SimpleOrderBookTest`. Two expectations in `LimitOrderProcessorTest`
+  encoded the old random heap order and are updated to price-time results.
+- **rates-service:** the replayed initial quote got a "now" timestamp and went to the front of the
+  history, so the broker chart got unordered data and lightweight-charts rendered nothing. The
+  initial quote now uses the `instrument.initialized` event timestamp and every quote is inserted in
+  time order.
+- Ports: broker-management-service 8085 (it took 8080 by default), settlement-service 8087.
+- Local DB `iflash_broker_platform` (owner `iflash`) created for broker-platform's `local` profile.
+
+Known, not fixed: `MarketOrderProcessor` compares a resting order's volume with the requested volume
+instead of the remaining volume, so a market order can be over-filled; `SimpleOrderBook.getTopOrders`
+iterates the queue unsorted and takes `subList(depth, size)` (the tail); broker-platform asks for both
+book sides with `orderBy=ASC`, so its UI lists bids from the lowest.

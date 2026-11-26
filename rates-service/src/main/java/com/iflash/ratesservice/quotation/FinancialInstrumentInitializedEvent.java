@@ -9,4 +9,8 @@ record FinancialInstrumentInitializedEvent(UUID routingKey, Integer eventVersion
 
     record FinancialInstrument(String ticker, BigDecimal initialPrice) {
     }
+
+    Quotation initialQuotation(FinancialInstrument instrument) {
+        return new Quotation(timestamp.toEpochMilli(), instrument.initialPrice());
+    }
 }

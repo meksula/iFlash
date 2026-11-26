@@ -143,11 +143,11 @@ class LimitOrderProcessorTest {
         OrderRegistrationResult orderRegistrationResult = limitOrderProcessor.processLimitOrder(registerOrderCommand);
 
         assertAll(() -> assertFalse(simpleOrderBook.getAsksOrderQueue(ticker).isEmpty()),
-                  () -> assertEquals(3, simpleOrderBook.getAsksOrderQueue(ticker).size()),
+                  () -> assertEquals(2, simpleOrderBook.getAsksOrderQueue(ticker).size()),
                   () -> assertTrue(simpleOrderBook.getBidsOrderQueue(ticker).isEmpty()),
                   () -> assertEquals(OrderRegistrationState.SUCCESS, orderRegistrationResult.orderRegistrationState()),
                   () -> assertEquals(TransactionPhase.FULLY_COMPLETED, orderRegistrationResult.transactionPhase()),
-                  () -> assertEquals(3, orderRegistrationResult.finishedTransactionInfoList().size()),
+                  () -> assertEquals(4, orderRegistrationResult.finishedTransactionInfoList().size()),
                   () -> assertNull(orderRegistrationResult.errorMessage()),
                   () -> assertEquals(10, orderRegistrationResult.orderFillDetails().volumeRequested()),
                   () -> assertEquals(10, orderRegistrationResult.orderFillDetails().volumeFilled()),
@@ -197,7 +197,7 @@ class LimitOrderProcessorTest {
                   () -> assertEquals("Limit order completed successfully", nextSameOrderRegistrationResult.orderFillDetails().message()),
                   () -> assertEquals(OrderRegistrationState.SUCCESS, nextSameOrderRegistrationResult.orderRegistrationState()),
                   () -> assertEquals(TransactionPhase.FULLY_COMPLETED, nextSameOrderRegistrationResult.transactionPhase()),
-                  () -> assertEquals(1, nextSameOrderRegistrationResult.finishedTransactionInfoList().size()),
+                  () -> assertEquals(2, nextSameOrderRegistrationResult.finishedTransactionInfoList().size()),
                   () -> assertNull(nextSameOrderRegistrationResult.errorMessage()),
                   () -> assertEquals(5, nextSameOrderRegistrationResult.orderFillDetails().volumeRequested()),
                   () -> assertEquals(5, nextSameOrderRegistrationResult.orderFillDetails().volumeFilled()),

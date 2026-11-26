@@ -384,4 +384,76 @@ class SimpleOrderBookTest {
                   () -> assertEquals(BigDecimal.valueOf(171.7202), snapshotWithOffset.getElements().get(0).price()),
                   () -> assertEquals(BigDecimal.valueOf(171.8431), snapshotWithOffset.getElements().get(1).price()));
     }
+
+    @Test
+    @DisplayName("Should sell MARKET order to the highest bid first")
+    void shouldSellMarketOrderToTheHighestBidFirst() {
+        var ticker = "NVDA.US";
+
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
+        orderBook.registerTicker(ticker);
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.BID, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.1442), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.BID, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.BID, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.3248), 10L));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+
+        RegisterOrderCommand sellCommand = new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, null, 10L);
+        List<FinishedTransactionInfo> finishedTransactions = orderBook.registerOrder(sellCommand)
+                                                                      .finishedTransactionInfoList();
+
+        assertAll(() -> assertEquals(1, finishedTransactions.size()),
+                  () -> assertEquals(BigDecimal.valueOf(171.9733), finishedTransactions.get(0).price()),
+                  () -> assertEquals(2,
+                                     orderBook.getBidsOrderQueue(ticker)
+                                              .size()));
+    }
+
+    @Test
+    @DisplayName("Should match LIMIT sell order with the highest bid when sell price is lower than this bid, so order book is never crossed")
+    void shouldMatchLimitSellOrderWithTheHighestBidWhenSellPriceIsLowerThanThisBid() {
+        var ticker = "NVDA.US";
+
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
+        orderBook.registerTicker(ticker);
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.BID, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.1442), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.BID, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+
+        RegisterOrderCommand sellCommand = new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.5000), 10L);
+        List<FinishedTransactionInfo> finishedTransactions = orderBook.registerOrder(sellCommand)
+                                                                      .finishedTransactionInfoList();
+
+        assertAll(() -> assertEquals(1, finishedTransactions.size()),
+                  () -> assertEquals(BigDecimal.valueOf(171.9733), finishedTransactions.get(0).price()),
+                  () -> assertEquals(0,
+                                     orderBook.getAsksOrderQueue(ticker)
+                                              .size()),
+                  () -> assertEquals(1,
+                                     orderBook.getBidsOrderQueue(ticker)
+                                              .size()));
+    }
+
+    @Test
+    @DisplayName("Should sell to bids with the same price in order of their registration")
+    void shouldSellToBidsWithTheSamePriceInOrderOfTheirRegistration() {
+        var ticker = "NVDA.US";
+
+        SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
+        orderBook.registerTicker(ticker);
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.BID, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.BID, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 20L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.BID, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 30L));
+        registerOrderCommands.forEach(orderBook::registerOrder);
+
+        orderBook.registerOrder(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, null, 10L));
+        orderBook.registerOrder(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, null, 20L));
+
+        assertAll(() -> assertEquals(1,
+                                     orderBook.getBidsOrderQueue(ticker)
+                                              .size()),
+                  () -> assertEquals(30,
+                                     orderBook.getBidsOrderQueue(ticker)
+                                              .peek()
+                                              .getVolume()));
+    }
 }

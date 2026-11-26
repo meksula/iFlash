@@ -2,7 +2,6 @@ package com.iflash.ratesservice.quotation;
 
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,9 +10,9 @@ class QuotationStore {
 
     private final Map<String, TickerQuotations> quotationsByTicker = new ConcurrentHashMap<>();
 
-    void initTicker(String ticker, BigDecimal initialPrice) {
+    void initTicker(String ticker, Quotation initialQuotation) {
         quotationsByTicker.computeIfAbsent(ticker, absentTicker -> new TickerQuotations())
-                          .initialize(initialPrice);
+                          .initialize(initialQuotation);
     }
 
     void record(String ticker, Quotation quotation) {

@@ -59,7 +59,7 @@ class LimitOrderProcessor {
                     ordersQueue.offer(askOrder);
                     break;
                 }
-                askOrder = findMatchingAskOrder(registerOrderCommand.ticker(), registerOrderCommand.price());
+                askOrder = volumeBoughtInSession < volumeRequested ? findMatchingAskOrder(registerOrderCommand.ticker(), registerOrderCommand.price()) : null;
             }
             if (volumeBoughtInSession < volumeRequested) {
                 OrderRegistrationResult partiallyCompleted = OrderRegistrationResult.limitOrderPartiallyCompleted(ordersSoldOut, registerOrderCommand);
@@ -120,7 +120,7 @@ class LimitOrderProcessor {
                     ordersQueue.offer(askOrder);
                     break;
                 }
-                askOrder = findMatchingBidOrder(registerOrderCommand.ticker(), registerOrderCommand.price());
+                askOrder = volumeBoughtInSession < volumeRequested ? findMatchingBidOrder(registerOrderCommand.ticker(), registerOrderCommand.price()) : null;
             }
             if (volumeBoughtInSession < volumeRequested) {
                 OrderRegistrationResult partiallyCompleted = OrderRegistrationResult.limitOrderPartiallyCompleted(ordersSoldOut, registerOrderCommand);

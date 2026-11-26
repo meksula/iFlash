@@ -16,7 +16,7 @@ public class TickManager implements Runnable {
 
     private static final Logger log = LogManager.getLogger(TickManager.class);
 
-    private final static int TICK_INTERVAL_IN_SECONDS = 10;
+    private final static int TICK_INTERVAL_IN_SECONDS = 2;
     private final Set<Trader> traders;
 
     private final ScheduledExecutorService scheduledExecutorService;

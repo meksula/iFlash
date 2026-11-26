@@ -55,8 +55,8 @@ class SimpleOrderBook implements OrderBook {
 
     @Override
     public void registerTicker(String ticker) {
-        Queue<Order> askOrdersQueue = new PriorityBlockingQueue<>();
-        Queue<Order> bidsOrdersQueue = new PriorityBlockingQueue<>();
+        Queue<Order> askOrdersQueue = new PriorityBlockingQueue<>(11, Order.ASK_PRIORITY);
+        Queue<Order> bidsOrdersQueue = new PriorityBlockingQueue<>(11, Order.BID_PRIORITY);
         this.asksOrdersByTicker.putIfAbsent(ticker, askOrdersQueue);
         this.bidsOrdersByTicker.putIfAbsent(ticker, bidsOrdersQueue);
         log.info("Company with ticker: {} registered", ticker);

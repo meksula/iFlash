@@ -11,9 +11,11 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.iflash.core.configuration.GlobalSettings.GLOBAL_CURRENCY;
 
@@ -23,8 +25,15 @@ import static com.iflash.core.configuration.GlobalSettings.GLOBAL_CURRENCY;
 class Order implements Comparable<Order> {
 
     private static final Logger log = LoggerFactory.getLogger(Order.class);
+    private static final AtomicLong REGISTRATION_SEQUENCE = new AtomicLong();
+
+    static final Comparator<Order> ASK_PRIORITY = Comparator.comparing(Order::getPrice)
+                                                            .thenComparingLong(Order::getRegistrationSequence);
+    static final Comparator<Order> BID_PRIORITY = Comparator.comparing(Order::getPrice, Comparator.reverseOrder())
+                                                            .thenComparingLong(Order::getRegistrationSequence);
 
     private final UUID orderUuid;
+    private final long registrationSequence;
     private final ZonedDateTime orderCreationDate;
     private final String ticker;
     private final BigDecimal price;
@@ -39,7 +48,7 @@ class Order implements Comparable<Order> {
         var newOrderRegistrationState = OrderRegistrationState.PENDING;
         var newCurrentOrderState = OrderState.PENDING;
         List<OrderStateChange> orderStateChanges = new ArrayList<>(0);
-        Order order = new Order(UUID.randomUUID(), ZonedDateTime.now(), registerOrderCommand.ticker(), registerOrderCommand.price(), GLOBAL_CURRENCY, registerOrderCommand.volume(),
+        Order order = new Order(UUID.randomUUID(), REGISTRATION_SEQUENCE.incrementAndGet(), ZonedDateTime.now(), registerOrderCommand.ticker(), registerOrderCommand.price(), GLOBAL_CURRENCY, registerOrderCommand.volume(),
                                 OrderRegistrationState.PENDING, OrderState.PENDING, orderStateChanges);
         orderStateChanges.add(new OrderStateChange(ZonedDateTime.now(), OrderRegistrationState.UNKNOWN, newOrderRegistrationState, OrderState.UNKNOWN, newCurrentOrderState, registerOrderCommand.volume(), registerOrderCommand.volume()));
         return order;
