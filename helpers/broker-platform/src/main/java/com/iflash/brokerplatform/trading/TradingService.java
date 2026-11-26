@@ -30,22 +30,48 @@ public class TradingService {
     private final UserRepository userRepository;
     private final PositionRepository positionRepository;
     private final TradeRepository tradeRepository;
+    private final PositionLotRepository positionLotRepository;
     private final IflashApiClient api;
 
     public TradingService(UserRepository userRepository, PositionRepository positionRepository,
-                          TradeRepository tradeRepository, IflashApiClient api) {
+                          TradeRepository tradeRepository, PositionLotRepository positionLotRepository,
+                          IflashApiClient api) {
         this.userRepository = userRepository;
         this.positionRepository = positionRepository;
         this.tradeRepository = tradeRepository;
+        this.positionLotRepository = positionLotRepository;
         this.api = api;
     }
 
     @Transactional
     public OrderOutcome placeOrder(Long userId, String rawTicker, String direction, String orderType,
                                    BigDecimal price, long volume) {
-        String ticker = rawTicker == null ? "" : rawTicker.trim().toUpperCase();
+        String ticker = normalize(rawTicker);
         validateInputs(ticker, direction, orderType, price, volume);
+        return execute(userId, ticker, direction, orderType, price, volume,
+                positionLotRepository.findByUserIdAndTickerOrderByPurchasedAtAscIdAsc(userId, ticker));
+    }
 
+    @Transactional
+    public OrderOutcome liquidatePosition(Long userId, String rawTicker) {
+        String ticker = normalize(rawTicker);
+        long quantity = heldQuantity(userId, ticker);
+        if (quantity == 0) {
+            throw new TradingException("No open position in " + ticker);
+        }
+        return execute(userId, ticker, SELL, MARKET, null, quantity,
+                positionLotRepository.findByUserIdAndTickerOrderByPurchasedAtAscIdAsc(userId, ticker));
+    }
+
+    @Transactional
+    public OrderOutcome liquidateLot(Long userId, Long lotId) {
+        PositionLot lot = positionLotRepository.findByIdAndUserId(lotId, userId)
+                                               .orElseThrow(() -> new TradingException("Lot not found: " + lotId));
+        return execute(userId, lot.getTicker(), SELL, MARKET, null, lot.getQuantity(), List.of(lot));
+    }
+
+    private OrderOutcome execute(Long userId, String ticker, String direction, String orderType, BigDecimal price,
+                                 long volume, List<PositionLot> lotsToRelease) {
         User user = userRepository.findById(userId)
                                   .orElseThrow(() -> new IllegalStateException("User not found: " + userId));
         Position position = positionRepository.findByUserIdAndTicker(userId, ticker)
@@ -61,13 +87,15 @@ public class TradingService {
         BigDecimal cash = totalCash(result);
         settle(direction, user, position, filledQuantity, cash);
 
-        tradeRepository.save(new Trade(userId, ticker, direction, orderType, price, filledQuantity, cash));
+        Trade trade = new Trade(userId, ticker, direction, orderType, price, filledQuantity, cash);
+        tradeRepository.save(trade);
+        settleLots(trade, lotsToRelease);
         return new OrderOutcome(ticker, direction, orderType, volume, filledQuantity, cash);
     }
 
     @Transactional(readOnly = true)
     public long heldQuantity(Long userId, String ticker) {
-        return positionRepository.findByUserIdAndTicker(userId, ticker == null ? "" : ticker.trim().toUpperCase())
+        return positionRepository.findByUserIdAndTicker(userId, normalize(ticker))
                                  .map(Position::getQuantity)
                                  .orElse(0L);
     }
@@ -106,6 +134,17 @@ public class TradingService {
             position.setQuantity(position.getQuantity() - filledQuantity);
         }
         positionRepository.save(position);
+    }
+
+    private void settleLots(Trade trade, List<PositionLot> lotsToRelease) {
+        if (trade.getFilledQuantity() == 0) {
+            return;
+        }
+        if (isBuy(trade.getDirection())) {
+            positionLotRepository.save(PositionLot.of(trade));
+        } else {
+            positionLotRepository.deleteAll(PositionLot.releaseInOrder(lotsToRelease, trade.getFilledQuantity()));
+        }
     }
 
     private BigDecimal currentPrice(String ticker) {
@@ -152,6 +191,10 @@ public class TradingService {
                      .stream()
                      .map(fill -> fill.price().multiply(BigDecimal.valueOf(fill.volume())))
                      .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private String normalize(String ticker) {
+        return ticker == null ? "" : ticker.trim().toUpperCase();
     }
 
     private boolean isBuy(String direction) {

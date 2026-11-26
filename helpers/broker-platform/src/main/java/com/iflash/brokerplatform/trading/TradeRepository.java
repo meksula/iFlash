@@ -7,4 +7,7 @@ import java.util.List;
 public interface TradeRepository extends JpaRepository<Trade, Long> {
 
     List<Trade> findTop100ByUserIdOrderByCreatedAtDesc(Long userId);
+
+    List<Trade> findByUserIdAndTickerAndFilledQuantityGreaterThanOrderByCreatedAtAscIdAsc(Long userId, String ticker,
+                                                                                         long filledQuantity);
 }

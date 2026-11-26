@@ -1,0 +1,52 @@
+<dialog #dialog class="order-dialog" (cancel)="close()" (mousedown)="closeOnBackdrop($event)">
+  <form (submit)="submit($event)">
+    <header class="order-head">
+      <h2>Order <span class="mono">{{ ticker() }}</span></h2>
+      <button type="button" class="icon-button" (click)="close()" aria-label="Close">×</button>
+    </header>
+
+    <dl class="order-facts">
+      <div><dt>Last price</dt><dd>{{ price() | usd }}</dd></div>
+      <div><dt>Held</dt><dd>{{ position() }}</dd></div>
+      <div><dt>Cash</dt><dd>{{ auth.balance() | usd }}</dd></div>
+    </dl>
+
+    <div class="side" role="group" aria-label="Side">
+      <button type="button" class="side-buy" [class.on]="direction() === 'BID'" (click)="direction.set('BID')">Buy</button>
+      <button type="button" class="side-sell" [class.on]="direction() === 'ASK'" (click)="direction.set('ASK')">Sell</button>
+    </div>
+
+    <div class="order-type" role="group" aria-label="Order type">
+      <button type="button" [class.on]="isMarket()" (click)="orderType.set('MARKET')">
+        Market<small>now, at best price</small>
+      </button>
+      <button type="button" [class.on]="!isMarket()" (click)="orderType.set('LIMIT')">
+        Limit<small>at your price or better</small>
+      </button>
+    </div>
+
+    <div class="order-fields">
+      @if (!isMarket()) {
+        <label>
+          Price
+          <input type="number" min="0" step="0.01" placeholder="0.00"
+                 [value]="orderPrice() ?? ''" (input)="orderPrice.set(+$any($event.target).value || null)" />
+        </label>
+      }
+      <label>
+        Volume
+        <input type="number" min="1" step="1" placeholder="0"
+               [value]="volume() ?? ''" (input)="volume.set(+$any($event.target).value || null)" />
+      </label>
+    </div>
+
+    <p class="order-estimate">Estimated value <strong>{{ estimate() | usd }}</strong></p>
+
+    @if (message()) { <div class="flash flash-warn">{{ message() }}</div> }
+    @if (error()) { <div class="flash flash-err">{{ error() }}</div> }
+
+    <button type="submit" class="btn btn-block submit" [class.submit-sell]="direction() === 'ASK'" [disabled]="busy()">
+      {{ busy() ? 'Placing…' : (direction() === 'BID' ? 'Place buy order' : 'Place sell order') }}
+    </button>
+  </form>
+</dialog>

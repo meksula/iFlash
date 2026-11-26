@@ -9,7 +9,7 @@ import java.util.List;
 public final class OrderCatalog {
 
     public static final List<String> ORDER_TYPES =
-            List.of("MARKET", "LIMIT", "STOP", "STOP_LIMIT", "ICEBERG", "FOK", "IOC", "GTC", "GTD", "AON");
+            List.of("MARKET", "LIMIT");
 
     public record Direction(String code, String label) {
     }

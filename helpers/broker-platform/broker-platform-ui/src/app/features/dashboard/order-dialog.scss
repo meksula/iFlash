@@ -1,0 +1,64 @@
+.order-dialog {
+  width: min(380px, calc(100vw - 32px));
+  padding: 0 16px 16px;
+  border: none;
+  border-top: 3px solid var(--rule);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+}
+
+.order-dialog::backdrop { background: rgba(3, 7, 15, 0.65); }
+
+.order-head { display: flex; align-items: center; height: 40px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+
+.order-head h2 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.order-head h2 .mono { font-size: 13px; letter-spacing: 0; margin-left: 6px; color: var(--flame-700); }
+
+.order-facts { display: grid; grid-template-columns: repeat(3, 1fr); margin: 0 0 12px; }
+.order-facts dt { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+.order-facts dd { margin: 2px 0 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.order-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.order-fields input, .order-fields select { margin-top: 4px; text-transform: none; letter-spacing: 0; }
+
+.order-estimate { margin: 12px 0; font-size: 13px; color: var(--muted); }
+.order-estimate strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.side, .order-type { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.order-type { margin-top: 8px; }
+
+.side button, .order-type button {
+  height: 36px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  color: var(--muted);
+}
+
+.side .side-buy:hover { border-color: var(--buy); color: var(--buy); }
+.side .side-sell:hover { border-color: var(--sell); color: var(--sell); }
+.side .side-buy.on { background: var(--buy-fill); border-color: var(--buy-fill); color: #fff; }
+.side .side-sell.on { background: var(--sell-fill); border-color: var(--sell-fill); color: #fff; }
+
+.order-type button { height: auto; padding: 6px 8px; display: flex; flex-direction: column; line-height: 1.25; }
+.order-type button small { font-size: 10.5px; font-weight: 400; }
+.order-type button:hover { color: var(--ink); }
+.order-type button.on { color: var(--ink); border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+
+.submit { background: var(--buy-fill); border-color: var(--buy-fill); color: #fff; }
+.submit-sell { background: var(--sell-fill); border-color: var(--sell-fill); }
+.submit:hover { filter: brightness(1.1); background: var(--buy-fill); color: #fff; }
+.submit-sell:hover { background: var(--sell-fill); }
+

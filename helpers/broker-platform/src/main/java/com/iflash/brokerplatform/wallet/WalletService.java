@@ -32,6 +32,11 @@ public class WalletService {
     }
 
     @Transactional(readOnly = true)
+    public BigDecimal totalDeposits(Long userId) {
+        return paymentRepository.totalAmount(userId);
+    }
+
+    @Transactional(readOnly = true)
     public List<Payment> history(Long userId) {
         return paymentRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }

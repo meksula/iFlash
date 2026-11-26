@@ -13,10 +13,18 @@ export interface LoginResponse {
 export interface Me {
   email: string;
   balance: number;
+  totalValue: number;
+  profit: number;
+}
+
+export interface FavoriteQuote {
+  ticker: string;
+  currentPrice: number | null;
+  dailyChangePercent: number | null;
 }
 
 export interface DashboardResponse {
-  favorites: Instrument[];
+  favorites: FavoriteQuote[];
   engineError: boolean;
 }
 
@@ -41,11 +49,22 @@ export interface InstrumentDetail {
   engineError: boolean;
 }
 
+export interface Lot {
+  id: number;
+  quantity: number;
+  purchasePrice: number;
+  purchasedAt: string;
+  changePercent: number | null;
+}
+
 export interface Holding {
   ticker: string;
   quantity: number;
+  purchasePrice: number | null;
   currentPrice: number;
   marketValue: number;
+  changePercent: number | null;
+  lots: Lot[];
 }
 
 export interface Trade {

@@ -1,51 +1,175 @@
-<div class="container">
+<ng-template #coin>
+  <svg class="coin" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+    <rect x="1.5" y="4" width="13" height="8" fill="none" stroke="currentColor" stroke-width="1.2" />
+    <circle cx="8" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.2" />
+  </svg>
+</ng-template>
+
+<div class="dash">
   @if (engineError()) {
-    <div class="flash flash-warn">
+    <div class="flash flash-warn dash-wide">
       Could not reach the trading engine (gateway-service on port 8080). Start it to see live data.
     </div>
   }
-
-  <div class="hero">
-    <div>
-      <h1>Welcome back</h1>
-      <p class="muted">{{ auth.email() }}</p>
+  @if (flash(); as text) {
+    <div class="flash flash-err dash-wide">
+      {{ text }}
+      <button type="button" class="icon-button" (click)="flash.set(null)" aria-label="Dismiss">×</button>
     </div>
-    <div class="balance-card">
-      <span class="label">Available balance</span>
-      <span class="value">${{ (auth.balance() ?? 0) | number: '1.2-2' }}</span>
-      <a class="btn btn-ghost btn-small" routerLink="/wallet">Top up</a>
-    </div>
-  </div>
+  }
 
-  <div class="card">
-    <div class="card-head">
-      <h2>Favorites</h2>
-      <a class="btn btn-small" routerLink="/instruments">Browse instruments</a>
+  <section class="panel favorites">
+    <header class="panel-head">
+      <h2>Favourites</h2>
+      <span class="panel-meta">{{ favorites().length }}</span>
+    </header>
+    <div class="panel-scroll">
+      @if (loading()) {
+        <p class="empty">Loading…</p>
+      } @else if (favorites().length === 0) {
+        <p class="empty">No favourites yet. Star an instrument on the Instruments tab to pin it here.</p>
+      } @else {
+        <table class="grid">
+          <thead>
+            <tr>
+              <th class="icon-col"></th>
+              <th><button type="button" (click)="favoriteSort.by('name')">Name {{ favoriteSort.mark('name') }}</button></th>
+              <th><button type="button" (click)="favoriteSort.by('ticker')">Ticker {{ favoriteSort.mark('ticker') }}</button></th>
+              <th class="num">
+                <button type="button" (click)="favoriteSort.by('currentPrice')">Price {{ favoriteSort.mark('currentPrice') }}</button>
+              </th>
+              <th class="num">
+                <button type="button" (click)="favoriteSort.by('dailyChangePercent')">Day {{ favoriteSort.mark('dailyChangePercent') }}</button>
+              </th>
+              <th class="action-col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fav of sortedFavorites(); track fav.ticker) {
+              <tr class="clickable" [class.selected]="chartTicker() === fav.ticker" (click)="selected.set(fav.ticker)">
+                <td class="icon-col"><ng-container *ngTemplateOutlet="coin" /></td>
+                <td class="muted">—</td>
+                <td class="ticker">{{ fav.ticker }}</td>
+                <td class="num">{{ fav.currentPrice | usd }}</td>
+                <td class="num" [class]="changeClass(fav.dailyChangePercent)">{{ fav.dailyChangePercent | percent }}</td>
+                <td class="action-col">
+                  <div class="order-buttons">
+                    <button type="button" class="buy-button" (click)="openOrder(fav.ticker, 'BID', $event)"
+                            [attr.aria-label]="'Buy ' + fav.ticker" [title]="'Buy ' + fav.ticker">
+                      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+                        <path d="M1 2h2.2l1.7 8.2h7.6l1.6-5.7H4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                        <circle cx="6.2" cy="13.2" r="1.3" fill="currentColor" />
+                        <circle cx="11.6" cy="13.2" r="1.3" fill="currentColor" />
+                      </svg>
+                    </button>
+                    <button type="button" class="sell-button" (click)="openOrder(fav.ticker, 'ASK', $event)"
+                            [attr.aria-label]="'Sell ' + fav.ticker" [title]="'Sell ' + fav.ticker">
+                      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+                        <path d="M8.6 1.5h5.9v5.9l-7 7-5.9-5.9z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                        <circle cx="11.4" cy="4.6" r="1.2" fill="currentColor" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     </div>
+  </section>
 
+  <app-price-chart [ticker]="chartTicker()" />
+
+  <section class="panel portfolio dash-wide">
     @if (loading()) {
       <p class="empty">Loading…</p>
-    } @else if (favorites().length === 0) {
-      <p class="empty">No favorites yet. Open an instrument and star it to pin it here.</p>
+    } @else if (holdings().length === 0) {
+      <p class="empty">No open positions.</p>
     } @else {
-      <table class="table">
+      <table class="grid">
         <thead>
-          <tr><th>Ticker</th><th class="num">Last price</th><th></th></tr>
+          <tr>
+            <th class="expand-col"></th>
+            <th class="icon-col"></th>
+            <th><button type="button" (click)="holdingSort.by('name')">Name {{ holdingSort.mark('name') }}</button></th>
+            <th><button type="button" (click)="holdingSort.by('ticker')">Ticker {{ holdingSort.mark('ticker') }}</button></th>
+            <th class="num">
+              <button type="button" (click)="holdingSort.by('quantity')">Qty {{ holdingSort.mark('quantity') }}</button>
+            </th>
+            <th class="num">
+              <button type="button" (click)="holdingSort.by('purchasePrice')">Purchase price {{ holdingSort.mark('purchasePrice') }}</button>
+            </th>
+            <th class="num">
+              <button type="button" (click)="holdingSort.by('currentPrice')">Current price {{ holdingSort.mark('currentPrice') }}</button>
+            </th>
+            <th class="num">
+              <button type="button" (click)="holdingSort.by('marketValue')">Value {{ holdingSort.mark('marketValue') }}</button>
+            </th>
+            <th class="num">
+              <button type="button" (click)="holdingSort.by('changePercent')">Change {{ holdingSort.mark('changePercent') }}</button>
+            </th>
+            <th class="action-col"></th>
+            <th class="action-col"></th>
+          </tr>
         </thead>
         <tbody>
-          @for (fav of favorites(); track fav.ticker) {
-            <tr>
-              <td class="mono">{{ fav.ticker }}</td>
-              <td class="num mono">
-                {{ fav.currentPrice !== null ? '$' + (fav.currentPrice | number: '1.2-4') : '—' }}
+          @for (h of sortedHoldings(); track h.ticker) {
+            <tr class="clickable" [class.selected]="chartTicker() === h.ticker"
+                (click)="toggle(h.ticker)">
+              <td class="expand-col">
+                <span class="chevron" [class.open]="expanded().has(h.ticker)">▸</span>
               </td>
-              <td class="num">
-                <a class="btn btn-small btn-primary" [routerLink]="['/instruments', fav.ticker]">Trade</a>
+              <td class="icon-col"><ng-container *ngTemplateOutlet="coin" /></td>
+              <td class="muted">—</td>
+              <td class="ticker">{{ h.ticker }}</td>
+              <td class="num">{{ h.quantity }}</td>
+              <td class="num">{{ h.purchasePrice | usd }}</td>
+              <td class="num">{{ h.currentPrice | usd }}</td>
+              <td class="num value">{{ h.marketValue | usd }}</td>
+              <td class="num" [class]="changeClass(h.changePercent)">{{ h.changePercent | percent }}</td>
+              <td class="action-col">
+                <button type="button" class="chart-button" [class.on]="chartTicker() === h.ticker"
+                        (click)="showChart(h.ticker, $event)"
+                        [attr.aria-label]="'Show ' + h.ticker + ' chart'" [title]="'Show ' + h.ticker + ' chart'">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                  <path d="M2 2v12h12" fill="none" stroke="currentColor" stroke-width="1.4" />
+                  <path d="M4.5 10.5l3-3.5 2 2 4-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                </svg>
+                </button>
+              </td>
+              <td class="action-col">
+                <button type="button" class="close-button" (click)="liquidatePosition(h, $event)"
+                        [attr.aria-label]="'Liquidate ' + h.ticker" title="Liquidate whole position">×</button>
               </td>
             </tr>
+            @if (expanded().has(h.ticker)) {
+              @for (lot of h.lots; track lot.id) {
+                <tr class="lot">
+                  <td class="expand-col"></td>
+                  <td class="icon-col"></td>
+                  <td colspan="2" class="muted">bought {{ lot.purchasedAt | relativeTime }}</td>
+                  <td class="num">{{ lot.quantity }}</td>
+                  <td class="num">{{ lot.purchasePrice | usd }}</td>
+                  <td class="num">{{ h.currentPrice | usd }}</td>
+                  <td class="num">{{ lot.quantity * h.currentPrice | usd }}</td>
+                  <td class="num" [class]="changeClass(lot.changePercent)">{{ lot.changePercent | percent }}</td>
+                  <td class="action-col"></td>
+                  <td class="action-col">
+                    <button type="button" class="close-button" (click)="liquidateLot(h, lot)"
+                            [attr.aria-label]="'Liquidate lot of ' + lot.quantity" title="Liquidate this lot">×</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr class="lot"><td colspan="11" class="muted">No lot details recorded for this position.</td></tr>
+              }
+            }
           }
         </tbody>
       </table>
     }
-  </div>
+  </section>
 </div>
+
+<app-order-dialog (placed)="refresh()" />
+<app-confirm-dialog />

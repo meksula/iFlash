@@ -1,0 +1,32 @@
+<div class="container">
+  <section class="panel">
+    <header class="panel-head"><h2>Trade history</h2></header>
+    @if (loading()) {
+      <p class="empty">Loading…</p>
+    } @else if (trades().length === 0) {
+      <p class="empty">No trades yet.</p>
+    } @else {
+      <table class="table compact">
+        <thead>
+          <tr><th>When</th><th>Ticker</th><th>Side</th><th>Type</th><th class="num">Filled</th><th class="num">Cash</th></tr>
+        </thead>
+        <tbody>
+          @for (t of trades(); track t.id) {
+            <tr>
+              <td class="muted">{{ t.createdAt | relativeTime }}</td>
+              <td class="mono">{{ t.ticker }}</td>
+              <td>
+                <span class="tag" [class.tag-buy]="isBuy(t.direction)" [class.tag-sell]="!isBuy(t.direction)">
+                  {{ isBuy(t.direction) ? 'Buy' : 'Sell' }}
+                </span>
+              </td>
+              <td>{{ t.orderType }}</td>
+              <td class="num">{{ t.filledQuantity }}</td>
+              <td class="num">{{ t.cashAmount | usd }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+</div>

@@ -10,4 +10,6 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     Optional<Position> findByUserIdAndTicker(Long userId, String ticker);
 
     List<Position> findByUserIdAndQuantityGreaterThanOrderByTicker(Long userId, long quantity);
+
+    List<Position> findByQuantityGreaterThan(long quantity);
 }

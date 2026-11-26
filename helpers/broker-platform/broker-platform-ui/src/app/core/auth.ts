@@ -13,6 +13,8 @@ export class Auth {
   readonly token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
   readonly email = signal<string | null>(null);
   readonly balance = signal<number | null>(null);
+  readonly totalValue = signal<number | null>(null);
+  readonly profit = signal<number | null>(null);
   readonly isAuthenticated = computed(() => this.token() !== null);
 
   login(email: string): Observable<LoginResponse> {
@@ -31,6 +33,8 @@ export class Auth {
       tap((me) => {
         this.email.set(me.email);
         this.balance.set(me.balance);
+        this.totalValue.set(me.totalValue);
+        this.profit.set(me.profit);
       }),
     );
   }
@@ -44,5 +48,7 @@ export class Auth {
     this.token.set(null);
     this.email.set(null);
     this.balance.set(null);
+    this.totalValue.set(null);
+    this.profit.set(null);
   }
 }

@@ -17,6 +17,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +39,7 @@ class TradingServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private PositionRepository positionRepository;
     @Mock private TradeRepository tradeRepository;
+    @Mock private PositionLotRepository positionLotRepository;
     @Mock private IflashApiClient api;
 
     @InjectMocks private TradingService tradingService;
@@ -130,6 +133,65 @@ class TradingServiceTest {
         verify(api).registerOrder(request.capture());
         assertEquals(null, request.getValue().price());
         assertEquals(TICKER, request.getValue().ticker());
+    }
+
+    @Test
+    @DisplayName("Buy opens a lot with the filled quantity and the average fill price")
+    void buyOpensLot() {
+        when(positionRepository.findByUserIdAndTicker(USER_ID, TICKER)).thenReturn(Optional.empty());
+        when(api.getPrice(TICKER)).thenReturn(new PriceDto(0L, TICKER, new BigDecimal("10")));
+        when(api.registerOrder(any())).thenReturn(result(new FillDto(2, new BigDecimal("10")),
+                new FillDto(2, new BigDecimal("11"))));
+
+        tradingService.placeOrder(USER_ID, TICKER, "BID", "MARKET", null, 4);
+
+        ArgumentCaptor<PositionLot> lot = ArgumentCaptor.forClass(PositionLot.class);
+        verify(positionLotRepository).save(lot.capture());
+        assertEquals(4, lot.getValue().getQuantity());
+        assertEquals(0, lot.getValue().getPurchasePrice().compareTo(new BigDecimal("10.5")), "average of 10 and 11");
+    }
+
+    @Test
+    @DisplayName("Sell releases lots oldest first and deletes the closed ones")
+    void sellReleasesLotsFifo() {
+        PositionLot older = lot(3);
+        PositionLot newer = lot(7);
+        when(positionRepository.findByUserIdAndTicker(USER_ID, TICKER))
+                .thenReturn(Optional.of(new Position(USER_ID, TICKER, 10)));
+        when(positionLotRepository.findByUserIdAndTickerOrderByPurchasedAtAscIdAsc(USER_ID, TICKER))
+                .thenReturn(new ArrayList<>(List.of(older, newer)));
+        when(api.registerOrder(any())).thenReturn(result(new FillDto(5, new BigDecimal("20"))));
+
+        tradingService.placeOrder(USER_ID, TICKER, "ASK", "MARKET", null, 5);
+
+        verify(positionLotRepository).deleteAll(List.of(older));
+        assertEquals(0, older.getQuantity());
+        assertEquals(5, newer.getQuantity());
+    }
+
+    @Test
+    @DisplayName("Liquidating a lot sells exactly its quantity at market and releases only that lot")
+    void liquidateLotSellsItsQuantity() {
+        PositionLot lot = lot(4);
+        when(positionLotRepository.findByIdAndUserId(9L, USER_ID)).thenReturn(Optional.of(lot));
+        when(positionRepository.findByUserIdAndTicker(USER_ID, TICKER))
+                .thenReturn(Optional.of(new Position(USER_ID, TICKER, 10)));
+        when(api.registerOrder(any())).thenReturn(result(new FillDto(4, new BigDecimal("20"))));
+
+        tradingService.liquidateLot(USER_ID, 9L);
+
+        ArgumentCaptor<OrderRequestDto> request = ArgumentCaptor.forClass(OrderRequestDto.class);
+        verify(api).registerOrder(request.capture());
+        assertEquals("ASK", request.getValue().orderDirection());
+        assertEquals("MARKET", request.getValue().orderType());
+        assertEquals(4L, request.getValue().volume());
+        assertEquals(0, lot.getQuantity());
+        verify(positionLotRepository).deleteAll(List.of(lot));
+    }
+
+    private PositionLot lot(long quantity) {
+        return new PositionLot(USER_ID, TICKER, quantity, new BigDecimal("10").multiply(BigDecimal.valueOf(quantity)),
+                Instant.now());
     }
 
     private OrderResultDto result(FillDto... fills) {

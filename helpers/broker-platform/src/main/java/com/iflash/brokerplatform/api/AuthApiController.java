@@ -1,7 +1,9 @@
 package com.iflash.brokerplatform.api;
 
+import com.iflash.brokerplatform.portfolio.PortfolioService;
 import com.iflash.brokerplatform.user.User;
 import com.iflash.brokerplatform.user.UserService;
+import com.iflash.brokerplatform.wallet.WalletService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,10 +18,15 @@ class AuthApiController {
 
     private final UserService userService;
     private final JwtService jwtService;
+    private final PortfolioService portfolioService;
+    private final WalletService walletService;
 
-    AuthApiController(UserService userService, JwtService jwtService) {
+    AuthApiController(UserService userService, JwtService jwtService, PortfolioService portfolioService,
+                      WalletService walletService) {
         this.userService = userService;
         this.jwtService = jwtService;
+        this.portfolioService = portfolioService;
+        this.walletService = walletService;
     }
 
     /** Passwordless: login == registration. Returns a JWT the SPA stores and sends as a bearer token. */
@@ -33,7 +40,10 @@ class AuthApiController {
     @GetMapping("/me")
     MeResponse me(@CurrentUserId Long userId) {
         User user = userService.require(userId);
-        return new MeResponse(user.getEmail(), user.getBalance());
+        BigDecimal totalValue = user.getBalance()
+                                    .add(portfolioService.totalMarketValue(portfolioService.holdings(userId)));
+        return new MeResponse(user.getEmail(), user.getBalance(), totalValue,
+                totalValue.subtract(walletService.totalDeposits(userId)));
     }
 
     record LoginRequest(String email) {
@@ -42,6 +52,6 @@ class AuthApiController {
     record LoginResponse(String token, String email) {
     }
 
-    record MeResponse(String email, BigDecimal balance) {
+    record MeResponse(String email, BigDecimal balance, BigDecimal totalValue, BigDecimal profit) {
     }
 }

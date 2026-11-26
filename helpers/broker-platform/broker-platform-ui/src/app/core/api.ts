@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   ChartPoint, DashboardResponse, InstrumentDetail, InstrumentsResponse, OrderBook,
-  OrderRequest, OrderResponse, PortfolioResponse, Price, WalletResponse,
+  OrderOutcome, OrderRequest, OrderResponse, PortfolioResponse, Price, WalletResponse,
 } from './models';
 
 /** Thin typed wrapper over the iBP REST API. */
@@ -25,6 +25,14 @@ export class Api {
 
   portfolio(): Observable<PortfolioResponse> {
     return this.http.get<PortfolioResponse>('/api/portfolio');
+  }
+
+  liquidatePosition(ticker: string): Observable<OrderOutcome> {
+    return this.http.post<OrderOutcome>(`/api/portfolio/${encodeURIComponent(ticker)}/liquidate`, {});
+  }
+
+  liquidateLot(lotId: number): Observable<OrderOutcome> {
+    return this.http.post<OrderOutcome>(`/api/portfolio/lots/${lotId}/liquidate`, {});
   }
 
   wallet(): Observable<WalletResponse> {

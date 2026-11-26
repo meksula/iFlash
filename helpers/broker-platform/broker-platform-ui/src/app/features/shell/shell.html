@@ -1,20 +1,57 @@
 <nav class="topbar">
   <a class="brand" routerLink="/" aria-label="iFlash Broker Platform">
-    <img class="brand-logo" src="ibp-logo.png" alt="iFlash Broker Platform (iBP)" />
+    <img class="brand-logo" src="iflash-wordmark.svg" alt="iFlash Broker Platform" />
   </a>
   <div class="nav-links">
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
     <a routerLink="/instruments" routerLinkActive="active">Instruments</a>
-    <a routerLink="/portfolio" routerLinkActive="active">Portfolio</a>
-    <a routerLink="/wallet" routerLinkActive="active">Wallet</a>
+    <a routerLink="/history" routerLinkActive="active">History</a>
+    <a routerLink="/news" routerLinkActive="active">News</a>
   </div>
   <div class="nav-account">
-    @if (auth.balance() !== null) {
-      <span class="balance">${{ auth.balance() | number: '1.2-2' }}</span>
-    }
-    <span class="email">{{ auth.email() }}</span>
-    <button type="button" class="btn btn-ghost btn-small" (click)="logout()">Logout</button>
+    <div class="figure">
+      <span class="figure-label">Free cash</span>
+      <span class="figure-value">{{ auth.balance() | usd }}</span>
+    </div>
+    <div class="figure">
+      <span class="figure-label">Portfolio</span>
+      <span class="figure-value">{{ auth.totalValue() | usd }}</span>
+    </div>
+    <div class="figure">
+      <span class="figure-label">Profit</span>
+      <span class="figure-value" [class.buy]="(auth.profit() ?? 0) > 0" [class.sell]="(auth.profit() ?? 0) < 0">
+        {{ auth.profit() | usd: true }}
+      </span>
+    </div>
+    <div class="user-menu">
+      <button type="button" class="user-button" (click)="menuOpen.set(!menuOpen())"
+              [attr.aria-expanded]="menuOpen()" aria-label="Account menu">
+        <span class="avatar">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <circle cx="12" cy="8.5" r="4.2" fill="currentColor" />
+            <path d="M3.5 22c0-4.8 3.8-7.6 8.5-7.6s8.5 2.8 8.5 7.6z" fill="currentColor" />
+          </svg>
+        </span>
+        <svg class="menu-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M5 7h14M5 12h14M5 17h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+      @if (menuOpen()) {
+        <div class="user-dropdown" (click)="menuOpen.set(false)">
+          <div class="user-email">{{ auth.email() }}</div>
+          <div class="user-row">
+            <span>Cash</span><span class="num">{{ auth.balance() | usd }}</span>
+          </div>
+          <a routerLink="/wallet">Wallet</a>
+          <button type="button" (click)="logout()">Log out</button>
+        </div>
+      }
+    </div>
   </div>
 </nav>
 
 <router-outlet></router-outlet>
+
+@if (toast.text(); as text) {
+  <div class="toast" role="status">{{ text }}</div>
+}
