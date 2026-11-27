@@ -1,4 +1,5 @@
 package com.iflash.core.order;
+
 import java.util.UUID;
 
 import com.iflash.core.quotation.CurrentQuotation;

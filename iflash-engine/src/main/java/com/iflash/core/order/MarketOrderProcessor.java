@@ -1,6 +1,7 @@
 package com.iflash.core.order;
 
 import com.iflash.core.quotation.CurrentQuotation;
+import com.iflash.core.quotation.QuotationProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,6 +17,7 @@ class MarketOrderProcessor {
     private final Map<String, Queue<Order>> asksOrdersByTicker;
     private final Map<String, Queue<Order>> bidsOrdersByTicker;
     private final LimitOrderProcessor limitOrderProcessor; // <- not good solution to have this here, better to switch to even driven arch
+    private final QuotationProvider quotationProvider;
 
     OrderRegistrationResult processMarketOrder(RegisterOrderCommand registerOrderCommand) {
         Queue<Order> ordersQueue = OrderDirection.BID == registerOrderCommand.orderDirection()
@@ -31,7 +33,7 @@ class MarketOrderProcessor {
         while (volumeBoughtInSession < volumeRequested) {
             Order order = ordersQueue.poll();
             if (order != null) {
-                if (order.getVolume() <= volumeRequested) {
+                if (order.getVolume() <= volumeRequested - volumeBoughtInSession) {
                     FinishedTransactionInfo boughtFinishedTransactionInfo = order.bought();
                     ordersSoldOut.add(boughtFinishedTransactionInfo);
                     volumeBoughtInSession = volumeBoughtInSession + boughtFinishedTransactionInfo.volume();
@@ -49,12 +51,13 @@ class MarketOrderProcessor {
                     Queue<Order> orderQueue = OrderDirection.BID == registerOrderCommand.orderDirection()
                                               ? bidsOrdersByTicker.get(registerOrderCommand.ticker())
                                               : asksOrdersByTicker.get(registerOrderCommand.ticker());
-                    Order idlingOrder = Order.factorize(registerOrderCommand);
+                    CurrentQuotation currentQuote = quotationProvider.getCurrentQuote(registerOrderCommand.ticker());
+                    Order idlingOrder = Order.factorizeWithPriceDefined(registerOrderCommand, currentQuote.price());
                     orderQueue.add(idlingOrder);
                     log.debug("Volume bought in session equals zero, so order have to be placed in queue");
                     return OrderRegistrationResult.limitOrderPlacedSuccessfully(registerOrderCommand);
                 }
-                log.debug("Partially Fill occured, requested volume: {}, filled volume: {}", volumeRequested, volumeBoughtInSession);
+                log.debug("Partially Fill occurred, requested volume: {}, filled volume: {}", volumeRequested, volumeBoughtInSession);
                 OrderRegistrationResult partiallyCompleted = OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut, registerOrderCommand);
                 CurrentQuotation currentQuote = new CurrentQuotation(System.currentTimeMillis(), registerOrderCommand.price());
                 RegisterOrderCommand afterPartialFill = registerOrderCommand.createAfterPartialFillment(currentQuote, partiallyCompleted.orderFillDetails()
@@ -63,6 +66,6 @@ class MarketOrderProcessor {
                 return partiallyCompleted;
             }
         }
-        return OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut); // todo???? jak tu się nic nie zadziało to jak completed, dziwne
+        return OrderRegistrationResult.transactionFullyCompleted(ordersSoldOut, registerOrderCommand);
     }
 }

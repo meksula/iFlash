@@ -9,8 +9,12 @@ public record OrderRegistrationResult(OrderRegistrationState orderRegistrationSt
                                       String errorMessage,
                                       OrderFillDetails orderFillDetails) {
 
-    public static OrderRegistrationResult transactionPartiallyCompleted(List<FinishedTransactionInfo> finishedTransactionInfoList) {
-        return new OrderRegistrationResult(OrderRegistrationState.SUCCESS, TransactionPhase.FULLY_COMPLETED, finishedTransactionInfoList, null, null);
+    public static OrderRegistrationResult transactionFullyCompleted(List<FinishedTransactionInfo> finishedTransactionInfoList, RegisterOrderCommand registerOrderCommand) {
+        Long volumeFilled = sumFilledVolume(finishedTransactionInfoList);
+        Long volumePending = registerOrderCommand.volume() - volumeFilled;
+        OrderFillDetails orderFillDetails = new OrderFillDetails(registerOrderCommand.volume(), volumeFilled, volumePending, null);
+
+        return new OrderRegistrationResult(OrderRegistrationState.SUCCESS, TransactionPhase.FULLY_COMPLETED, finishedTransactionInfoList, null, orderFillDetails);
     }
 
     public static OrderRegistrationResult failure(List<FinishedTransactionInfo> finishedTransactionInfoList, String errorMessage) {

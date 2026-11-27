@@ -4,9 +4,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.money.CurrencyUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -19,12 +18,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static com.iflash.core.configuration.GlobalSettings.GLOBAL_CURRENCY;
 
+@Slf4j
 @Getter
 @ToString
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 class Order implements Comparable<Order> {
 
-    private static final Logger log = LoggerFactory.getLogger(Order.class);
     private static final AtomicLong REGISTRATION_SEQUENCE = new AtomicLong();
 
     static final Comparator<Order> ASK_PRIORITY = Comparator.comparing(Order::getPrice)
@@ -52,6 +51,12 @@ class Order implements Comparable<Order> {
                                 OrderRegistrationState.PENDING, OrderState.PENDING, orderStateChanges);
         orderStateChanges.add(new OrderStateChange(ZonedDateTime.now(), OrderRegistrationState.UNKNOWN, newOrderRegistrationState, OrderState.UNKNOWN, newCurrentOrderState, registerOrderCommand.volume(), registerOrderCommand.volume()));
         return order;
+    }
+
+    static Order factorizeWithPriceDefined(RegisterOrderCommand registerOrderCommand, BigDecimal price) {
+        Order order = factorize(registerOrderCommand);
+        return new Order(order.getOrderUuid(), order.getRegistrationSequence(), order.getOrderCreationDate(), order.getTicker(), price, order.getCurrency(), order.getVolume(),
+                order.getOrderRegistrationState(), order.getCurrentOrderState(), order.getOrderStateHistory());
     }
 
     Order offerRegistrationFailed() {

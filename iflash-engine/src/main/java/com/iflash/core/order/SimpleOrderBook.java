@@ -13,16 +13,14 @@ import com.iflash.commons.Page;
 import com.iflash.commons.Pagination;
 import com.iflash.commons.ValidateUtils;
 import com.iflash.core.quotation.QuotationProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.iflash.core.order.OrderType.LIMIT;
 import static com.iflash.core.order.OrderType.MARKET;
 import static java.util.Objects.*;
 
+@Slf4j
 class SimpleOrderBook implements OrderBook {
-
-    private static final Logger log = LoggerFactory.getLogger(SimpleOrderBook.class);
 
     private final Map<String, Queue<Order>> asksOrdersByTicker;
     private final Map<String, Queue<Order>> bidsOrdersByTicker;
@@ -39,7 +37,7 @@ class SimpleOrderBook implements OrderBook {
         this.bidsOrdersByTicker = bidsOrdersByTicker;
 
         this.limitOrderProcessor = new LimitOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker, quotationProvider);
-        this.marketOrderProcessor = new MarketOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker, this.limitOrderProcessor);
+        this.marketOrderProcessor = new MarketOrderProcessor(asksOrdersByTicker, bidsOrdersByTicker, this.limitOrderProcessor, quotationProvider);
     }
 
     @Override
