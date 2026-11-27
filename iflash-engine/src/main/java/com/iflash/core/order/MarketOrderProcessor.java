@@ -59,7 +59,7 @@ class MarketOrderProcessor {
                 }
                 log.debug("Partially Fill occurred, requested volume: {}, filled volume: {}", volumeRequested, volumeBoughtInSession);
                 OrderRegistrationResult partiallyCompleted = OrderRegistrationResult.transactionPartiallyCompleted(ordersSoldOut, registerOrderCommand);
-                CurrentQuotation currentQuote = new CurrentQuotation(System.currentTimeMillis(), registerOrderCommand.price());
+                CurrentQuotation currentQuote = quotationProvider.getCurrentQuote(registerOrderCommand.ticker());
                 RegisterOrderCommand afterPartialFill = registerOrderCommand.createAfterPartialFillment(currentQuote, partiallyCompleted.orderFillDetails()
                                                                                                                                         .volumePending());
                 limitOrderProcessor.processLimitOrder(afterPartialFill);

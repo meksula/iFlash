@@ -121,7 +121,7 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), volume));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), volume));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         RegisterOrderCommand buyCommand = new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.BID, OrderType.MARKET, ticker, null, volume - 1);
@@ -141,11 +141,11 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Long volume = registerOrderCommands.stream()
@@ -168,11 +168,11 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Long volumeForSell = registerOrderCommands.stream()
@@ -204,11 +204,11 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Long volumeForSell = registerOrderCommands.stream()
@@ -239,11 +239,11 @@ class SimpleOrderBookTest {
         Long missingLimitOrders = 10L;
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Long totalAvailableVolume = registerOrderCommands.stream()
@@ -270,11 +270,11 @@ class SimpleOrderBookTest {
         Long missingLimitOrders = 10L;
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Long totalAvailableVolume = registerOrderCommands.stream()
@@ -300,11 +300,11 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Pagination firstPage = new Pagination(0, 2, OrderBy.ASC);
@@ -328,11 +328,11 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Pagination firstPageDesc = new Pagination(0, 2, OrderBy.DESC);
@@ -354,7 +354,7 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
-        orderBook.registerOrder(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L));
+        orderBook.registerOrder(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L));
 
         Pagination zeroSizePagination = new Pagination(0, 0, OrderBy.ASC);
         Pagination negativePagePagination = new Pagination(-1, 1, OrderBy.ASC);
@@ -370,11 +370,11 @@ class SimpleOrderBookTest {
 
         SimpleOrderBook orderBook = (SimpleOrderBook) OrderBookFactory.factorizeOrderBook(quotationProvider);
         orderBook.registerTicker(ticker);
-        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.9733), 10L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.7202), 25L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.1442), 5L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.8431), 30L),
-                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.MARKET, ticker, BigDecimal.valueOf(171.3248), 35L));
+        List<RegisterOrderCommand> registerOrderCommands = List.of(new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.9733), 10L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.7202), 25L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.1442), 5L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.8431), 30L),
+                                                                   new RegisterOrderCommand(UUID.randomUUID(), OrderDirection.ASK, OrderType.LIMIT, ticker, BigDecimal.valueOf(171.3248), 35L));
         registerOrderCommands.forEach(orderBook::registerOrder);
 
         Pagination paginationWithOffset = new Pagination(1, 2, OrderBy.ASC);
